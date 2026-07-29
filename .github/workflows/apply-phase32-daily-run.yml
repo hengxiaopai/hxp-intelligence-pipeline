@@ -1,0 +1,54 @@
+name: Materialize Phase 3.2 Daily Run
+
+on:
+  push:
+    branches: [phase-3-2-real-daily-run]
+    paths:
+      - "scripts/generate_daily_run_20260729.py"
+      - "scripts/run_daily_pipeline.py"
+      - "scripts/validate_daily_run.py"
+      - "tests/test_daily_run.py"
+      - ".github/workflows/apply-phase32-daily-run.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase-3-2-real-daily-run
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Generate archived real-source run
+        run: python scripts/generate_daily_run_20260729.py
+
+      - name: Validate archived run
+        run: |
+          python scripts/validate_daily_run.py --run-dir data/daily/2026-07-29
+          python -m unittest tests.test_daily_run -v
+
+      - name: Commit generated run package
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily/2026-07-29/
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "data(daily): archive first real-source run"
+          git push origin HEAD:phase-3-2-real-daily-run
