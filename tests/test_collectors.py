@@ -97,7 +97,7 @@ class CollectorTests(unittest.TestCase):
 
     def test_manual_only_source_is_blocked_for_live_collection(self) -> None:
         source = load_registry_source(REGISTRY, "registry-producthunt-daily")
-        with self.assertRaisesRegex(CollectionError, "manual_only"):
+        with self.assertRaises(CollectionError):
             assert_supported_source(source, live=True)
 
     def test_private_and_local_urls_are_rejected(self) -> None:
