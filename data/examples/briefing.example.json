@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0.0",
+  "briefing_id": "hxp-briefing-2026-07-29",
+  "date": "2026-07-29",
+  "timezone": "Asia/Shanghai",
+  "generated_at": "2026-07-29T01:30:00Z",
+  "language": "zh-CN",
+  "title": "珩小派多元情报简报｜示例数据",
+  "editorial_policy": {
+    "target_min_items": 5,
+    "target_max_items": 8,
+    "actual_new_item_count": 1,
+    "shortfall_reason": "该文件仅用于 Schema 与流水线验证，不代表正式日报，因此只保留一条示例事件。",
+    "new_or_new_angle_ratio": 1.0,
+    "dedup_windows_days": [3, 7, 30],
+    "source_requirements_met": true,
+    "market_session": "not_applicable"
+  },
+  "new_items": [
+    {
+      "item_id": "item-20260729-01",
+      "event_fingerprint": "evt-0123456789abcdef",
+      "status": "new",
+      "title": "AI 工作流进入预算治理",
+      "subtitle": "示例事件：企业开始按项目核算模型消耗",
+      "summary": "这是一条用于验证 HXP Intelligence Pipeline 数据结构的示例事件，不代表真实新闻。示例展示企业如何把 AI 使用量、项目预算与质量复盘纳入统一工作流。",
+      "primary_category": "developer_tools",
+      "information_types": ["official_release"],
+      "confidence": {
+        "level": "high",
+        "score": 95,
+        "rationale": "示例来源被明确标记为结构测试数据，字段完整且不存在事实外推。",
+        "evidence_count": 1
+      },
+      "importance_score": 82,
+      "novelty_score": 88,
+      "why_it_matters": [
+        "AI 工具开始进入正式预算管理流程",
+        "团队需要按项目追踪成本、质量与返工率",
+        "成本治理可能成为多模型工作流的基础能力"
+      ],
+      "follow_up": [
+        "验证任务级成本归因是否可实施",
+        "建立模型、项目与人员维度的消耗统计",
+        "评估质量评分与费用数据能否形成闭环"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "poster",
+        "product_prototype"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": ["src-example-official-release"],
+      "primary_source_id": "src-example-official-release",
+      "first_seen": "2026-07-29T01:00:00Z",
+      "last_updated": "2026-07-29T01:30:00Z",
+      "selected_reason": "该事件能够完整覆盖来源引用、置信度、内容转化、产品化和视觉简报字段，适合作为端到端示例。",
+      "risk_flags": ["none"],
+      "visual_brief": {
+        "concept": "明亮蓝白科技风的 AI 成本控制台，展示项目预算、模型路由、质量评分与费用趋势；所有数字仅使用抽象占位符。",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "真实企业财务数据",
+          "真实产品后台截图",
+          "官方合作或背书关系"
+        ]
+      }
+    }
+  ],
+  "continuation_items": [],
+  "content_opportunities": [
+    {
+      "opportunity_id": "content-20260729-01",
+      "wechat_title": "企业使用 AI，为什么必须先建立一套成本账本？",
+      "douyin_title": "AI 用得越多，为什么越需要算清每项任务成本？",
+      "angle": "从个人订阅转向团队预算治理，解释模型、项目、费用、质量和返工率如何形成统一账本。",
+      "visual_direction": "蓝白科技控制台，左侧模型路由，右侧项目预算与质量回报矩阵。",
+      "related_item_ids": ["item-20260729-01"]
+    },
+    {
+      "opportunity_id": "content-20260729-02",
+      "wechat_title": "多模型时代，团队应该怎样选择 Sol、Terra 与 Luna？",
+      "douyin_title": "不同 AI 任务，模型到底该怎么分工？",
+      "angle": "用任务难度、质量要求、时延和成本四个维度建立模型选择方法，不讨论未经核实的具体价格。",
+      "visual_direction": "三层任务路由塔与四维选择矩阵，突出复杂任务、日常执行和批量处理。",
+      "related_item_ids": ["item-20260729-01"]
+    },
+    {
+      "opportunity_id": "content-20260729-03",
+      "wechat_title": "一人公司如何建立自己的 AI 使用复盘系统？",
+      "douyin_title": "别只看 Token：一人公司要记录这 5 项 AI 数据",
+      "angle": "面向独立开发者与一人公司，强调费用、耗时、成功率、返工率和最终产出的周复盘。",
+      "visual_direction": "一人公司 AI 仪表盘，包含周任务、费用、成功率和内容产出四个模块。",
+      "related_item_ids": ["item-20260729-01"]
+    }
+  ],
+  "product_opportunity": null,
+  "risk_reminder": {
+    "title": "示例数据不得作为真实新闻发布",
+    "risk_type": "visual_misrepresentation",
+    "description": "本文件中的组织、事件和链接均用于测试。任何自动化运行都必须替换为真实、可核验来源，并在进入视觉阶段前通过事实审核。",
+    "safe_wording": [
+      "示例数据",
+      "不代表真实新闻",
+      "正式发布前需重新核验"
+    ]
+  },
+  "weekly_threads": {
+    "keywords": [
+      "模型成本",
+      "AI 预算",
+      "任务路由",
+      "质量复盘"
+    ],
+    "strongest_trend": "AI 工具管理正在从个人使用习惯升级为可核算、可审计、可复盘的团队工作流。",
+    "deep_dive_topic": "多模型任务路由与成本治理的产品架构",
+    "productization_opportunity": "面向一人公司和小团队的 AI 成本账单、权限审计与质量复盘控制台。"
+  },
+  "rejected_candidates": [
+    {
+      "candidate_id": "candidate-20260729-001",
+      "title": "示例：无来源的模型价格传闻",
+      "rejection_reason": "insufficient_sources",
+      "note": "缺少官方定价页或两个独立可靠来源，不进入正式简报。"
+    }
+  ],
+  "source_index": ["src-example-official-release"]
+}
