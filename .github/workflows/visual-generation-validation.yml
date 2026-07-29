@@ -1,0 +1,176 @@
+name: Visual Generation Validation
+
+on:
+  pull_request:
+    paths:
+      - "schemas/visual-*.json"
+      - "config/visual-*.json"
+      - "visual/**"
+      - "scripts/*visual*.py"
+      - "tests/test_visual_generation_flow.py"
+      - "requirements-dev.txt"
+      - ".github/workflows/visual-generation-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-generation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile visual generation code
+        run: >-
+          python -m py_compile
+          visual/prompt_builder.py
+          visual/request_queue.py
+          visual/result_import.py
+          visual/review.py
+          visual/retry_policy.py
+          scripts/build_visual_requests.py
+          scripts/import_visual_results.py
+          scripts/review_visuals.py
+          scripts/retry_failed_visuals.py
+          tests/test_visual_generation_flow.py
+
+      - name: Run visual generation unit tests
+        run: python -m unittest tests.test_visual_generation_flow -v
+
+      - name: Exercise manual handoff, review and targeted retry CLIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hxp-ai-visual /tmp/hxp-ai-visual-run
+          cp -R data/daily/2026-07-29 /tmp/hxp-ai-visual-run
+          mkdir -p /tmp/hxp-ai-visual/results
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('/tmp/hxp-ai-visual-run/run.json')
+          run = json.loads(path.read_text(encoding='utf-8'))
+          run['review_status'] = 'approved'
+          run['publication_allowed'] = True
+          path.write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+          python scripts/build_visual_queue.py \
+            --run-dir /tmp/hxp-ai-visual-run \
+            --logo tests/fixtures/hxp-test-logo.svg \
+            --allow-placeholder \
+            --output /tmp/hxp-ai-visual/queue.json
+          python scripts/build_visual_requests.py \
+            --visual-queue /tmp/hxp-ai-visual/queue.json \
+            --provider fixture \
+            --output /tmp/hxp-ai-visual/requests.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          requests = json.loads(Path('/tmp/hxp-ai-visual/requests.json').read_text(encoding='utf-8'))
+          output = Path('/tmp/hxp-ai-visual/results')
+          for index, request in enumerate(requests['requests'], start=1):
+              Image.new('RGB', (1792, 1024), (235, 245, 255 - index)).save(
+                  output / f"{request['request_id']}.png",
+                  format='PNG',
+              )
+          PY
+          python scripts/import_visual_results.py \
+            --requests /tmp/hxp-ai-visual/requests.json \
+            --result-dir /tmp/hxp-ai-visual/results \
+            --generator-reference fixture-review-flow \
+            --imported-at 2026-07-29T13:30:00+08:00 \
+            --output /tmp/hxp-ai-visual/requests.imported.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          requests = json.loads(Path('/tmp/hxp-ai-visual/requests.imported.json').read_text(encoding='utf-8'))
+          checks = {
+              'fact_consistent': True,
+              'brief_consistent': True,
+              'no_text_or_gibberish': True,
+              'no_fabricated_ui_or_data': True,
+              'brand_style_consistent': True,
+              'subject_clear': True,
+              'crop_safe': True,
+              'not_recent_visual_duplicate': True,
+          }
+          decisions = []
+          for index, request in enumerate(requests['requests']):
+              current = dict(checks)
+              if index == 1:
+                  current['subject_clear'] = False
+                  current['crop_safe'] = False
+                  decisions.append({
+                      'request_id': request['request_id'],
+                      'decision': 'needs_changes',
+                      'checks': current,
+                      'rejection_reasons': ['composition_problem', 'unsafe_crop'],
+                      'change_instruction': '主体收回中央并扩大左右留白，不改动主题隐喻。',
+                      'notes': 'CI targeted retry fixture',
+                  })
+              else:
+                  decisions.append({
+                      'request_id': request['request_id'],
+                      'decision': 'approved',
+                      'checks': current,
+                      'rejection_reasons': [],
+                      'change_instruction': None,
+                      'notes': None,
+                  })
+          payload = {
+              'reviewed_at': '2026-07-29T13:40:00+08:00',
+              'reviewer': {'type': 'fixture', 'identifier': 'ci-review'},
+              'decisions': decisions,
+          }
+          Path('/tmp/hxp-ai-visual/decisions.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+          python scripts/review_visuals.py \
+            --requests /tmp/hxp-ai-visual/requests.imported.json \
+            --decisions /tmp/hxp-ai-visual/decisions.json \
+            --review-output /tmp/hxp-ai-visual/review.json \
+            --requests-output /tmp/hxp-ai-visual/requests.reviewed.json
+          python scripts/retry_failed_visuals.py \
+            --requests /tmp/hxp-ai-visual/requests.reviewed.json \
+            --review /tmp/hxp-ai-visual/review.json \
+            --generated-at 2026-07-29T13:41:00+08:00 \
+            --plan-output /tmp/hxp-ai-visual/retry-plan.json \
+            --requests-output /tmp/hxp-ai-visual/requests.retried.json
+          python scripts/validate.py --schema schemas/visual-request.schema.json --data /tmp/hxp-ai-visual/requests.retried.json
+          python scripts/validate.py --schema schemas/visual-review.schema.json --data /tmp/hxp-ai-visual/review.json
+          python scripts/validate.py --schema schemas/visual-retry.schema.json --data /tmp/hxp-ai-visual/retry-plan.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          plan = json.loads(Path('/tmp/hxp-ai-visual/retry-plan.json').read_text(encoding='utf-8'))
+          requests = json.loads(Path('/tmp/hxp-ai-visual/requests.retried.json').read_text(encoding='utf-8'))
+          assert plan['summary']['scheduled'] == 1
+          assert len(requests['requests']) == 6
+          assert sum(r['attempt'] == 2 for r in requests['requests']) == 1
+          PY
+
+      - name: Upload visual generation audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-ai-visual-audit-2026-07-29
+          path: /tmp/hxp-ai-visual
+          if-no-files-found: error
+          retention-days: 7
