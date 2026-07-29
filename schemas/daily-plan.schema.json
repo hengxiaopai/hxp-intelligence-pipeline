@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/daily-plan.schema.json",
+  "title": "HXP Daily Collection Plan",
+  "description": "根据来源注册表、时间和水位状态生成的确定性每日采集计划。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "generated_at",
+    "timezone",
+    "mode",
+    "live_enabled",
+    "due_sources",
+    "blocked_sources",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "plan_id": {
+      "type": "string",
+      "pattern": "^daily-plan-[0-9]{8}T[0-9]{6}Z$"
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "timezone": {"type": "string", "const": "Asia/Shanghai"},
+    "mode": {
+      "type": "string",
+      "enum": ["plan_only", "fixture", "live"]
+    },
+    "live_enabled": {"type": "boolean"},
+    "due_sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/dueSource"}
+    },
+    "blocked_sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/blockedSource"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_sources",
+        "due_sources",
+        "live_collectable",
+        "manual_review",
+        "blocked_sources",
+        "deferred_sources"
+      ],
+      "properties": {
+        "active_sources": {"type": "integer", "minimum": 0},
+        "due_sources": {"type": "integer", "minimum": 0},
+        "live_collectable": {"type": "integer", "minimum": 0},
+        "manual_review": {"type": "integer", "minimum": 0},
+        "blocked_sources": {"type": "integer", "minimum": 0},
+        "deferred_sources": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "dueSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_id",
+        "priority",
+        "collection_method",
+        "access_policy",
+        "action",
+        "due_reason",
+        "due_since",
+        "last_attempt_at",
+        "last_success_at",
+        "live_eligible"
+      ],
+      "properties": {
+        "registry_id": {
+          "type": "string",
+          "pattern": "^registry-[a-z0-9][a-z0-9-]{4,100}$"
+        },
+        "priority": {"type": "integer", "minimum": 1, "maximum": 5},
+        "collection_method": {
+          "type": "string",
+          "enum": ["rss", "html_index", "manual_review", "official_api"]
+        },
+        "access_policy": {"type": "string", "minLength": 3, "maxLength": 80},
+        "action": {
+          "type": "string",
+          "enum": ["collect_live", "collect_fixture", "manual_review", "plan_only"]
+        },
+        "due_reason": {
+          "type": "string",
+          "enum": [
+            "never_attempted",
+            "minimum_interval_elapsed",
+            "freshness_deadline_exceeded",
+            "retry_after_failure"
+          ]
+        },
+        "due_since": {"type": ["string", "null"], "format": "date-time"},
+        "last_attempt_at": {"type": ["string", "null"], "format": "date-time"},
+        "last_success_at": {"type": ["string", "null"], "format": "date-time"},
+        "live_eligible": {"type": "boolean"}
+      }
+    },
+    "blockedSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry_id", "reason"],
+      "properties": {
+        "registry_id": {
+          "type": "string",
+          "pattern": "^registry-[a-z0-9][a-z0-9-]{4,100}$"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "inactive",
+            "requires_auth",
+            "unsupported_collection_method",
+            "access_policy_blocked",
+            "priority_excluded"
+          ]
+        }
+      }
+    }
+  }
+}
