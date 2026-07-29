@@ -161,5 +161,5 @@ python scripts/dedup_candidate.py \
 - Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
 - Phase 2.1：官方来源注册表与候选事件池 ✅
 - Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ✅
-- Phase 2.3：候选规范化、稳定指纹与去重索引 🚧
+- Phase 2.3：候选规范化、稳定指纹与去重索引 ✅
 - Phase 3：编辑评分、日报组装与真实候选池运行 ⏳
