@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/visual-request.schema.json",
+  "title": "HXP AI Visual Request Queue",
+  "description": "从已批准情报生成的无文字主视觉请求。核心流水线保持 provider-neutral，默认支持人工交给 ChatGPT 图片生成后回填结果。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_queue_id",
+    "visual_queue_id",
+    "briefing_id",
+    "date",
+    "generated_at",
+    "provider_policy",
+    "requests"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "request_queue_id": {
+      "type": "string",
+      "pattern": "^visual-request-queue-[0-9]{8}$"
+    },
+    "visual_queue_id": {
+      "type": "string",
+      "pattern": "^visual-queue-[0-9]{8}$"
+    },
+    "briefing_id": {
+      "type": "string",
+      "pattern": "^hxp-briefing-[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "date": {"type": "string", "format": "date"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "provider_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_provider",
+        "external_api_enabled",
+        "credentials_persisted",
+        "maximum_attempts"
+      ],
+      "properties": {
+        "default_provider": {
+          "type": "string",
+          "enum": ["manual_chatgpt", "external_api", "fixture"]
+        },
+        "external_api_enabled": {"type": "boolean"},
+        "credentials_persisted": {"type": "boolean", "const": false},
+        "maximum_attempts": {"type": "integer", "minimum": 1, "maximum": 5}
+      }
+    },
+    "requests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/request"}
+    }
+  },
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "item_id",
+        "attempt",
+        "parent_request_id",
+        "request_fingerprint",
+        "provider",
+        "status",
+        "target",
+        "safe_crop",
+        "prompt",
+        "negative_constraints",
+        "visual_brief",
+        "result"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "item_id": {
+          "type": "string",
+          "pattern": "^item-[0-9]{8}-[0-9]{2}$"
+        },
+        "attempt": {"type": "integer", "minimum": 1, "maximum": 5},
+        "parent_request_id": {
+          "type": ["string", "null"],
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "request_fingerprint": {
+          "type": "string",
+          "pattern": "^vreq-[a-f0-9]{32,64}$"
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["manual_chatgpt", "external_api", "fixture"]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending_generation",
+            "generated",
+            "imported",
+            "needs_review",
+            "approved",
+            "rejected",
+            "failed",
+            "exhausted"
+          ]
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height", "ratio", "format", "text_allowed"],
+          "properties": {
+            "width": {"type": "integer", "minimum": 512, "maximum": 8192},
+            "height": {"type": "integer", "minimum": 512, "maximum": 8192},
+            "ratio": {"type": "string", "enum": ["16:9", "3:2", "4:3", "1:1", "3:4", "9:16"]},
+            "format": {"type": "string", "enum": ["png", "jpg", "webp"]},
+            "text_allowed": {"type": "boolean", "const": false}
+          }
+        },
+        "safe_crop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["subject_anchor", "protected_regions", "notes"],
+          "properties": {
+            "subject_anchor": {
+              "type": "string",
+              "enum": ["center", "upper_center", "lower_center", "left_center", "right_center"]
+            },
+            "protected_regions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["x", "y", "width", "height"],
+                "properties": {
+                  "x": {"type": "number", "minimum": 0, "maximum": 1},
+                  "y": {"type": "number", "minimum": 0, "maximum": 1},
+                  "width": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+                  "height": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+                }
+              }
+            },
+            "notes": {"type": "string", "maxLength": 300}
+          }
+        },
+        "prompt": {"type": "string", "minLength": 80, "maxLength": 5000},
+        "negative_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 3, "maxLength": 300}
+        },
+        "visual_brief": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["concept", "category", "must_not_fabricate"],
+          "properties": {
+            "concept": {"type": "string", "minLength": 4, "maxLength": 500},
+            "category": {"type": "string", "minLength": 2, "maxLength": 80},
+            "must_not_fabricate": {
+              "type": "array",
+              "items": {"type": "string", "maxLength": 200}
+            }
+          }
+        },
+        "result": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/result"}
+          ]
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "byte_size",
+        "width",
+        "height",
+        "mime_type",
+        "imported_at",
+        "generator_reference"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 1},
+        "width": {"type": "integer", "minimum": 512, "maximum": 8192},
+        "height": {"type": "integer", "minimum": 512, "maximum": 8192},
+        "mime_type": {"type": "string", "enum": ["image/png", "image/jpeg", "image/webp"]},
+        "imported_at": {"type": "string", "format": "date-time"},
+        "generator_reference": {
+          "type": "string",
+          "description": "可审计的人工任务号或外部作业号，不得包含API密钥、Cookie或私密响应。",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    }
+  }
+}
