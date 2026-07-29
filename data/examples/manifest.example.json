@@ -1,0 +1,28 @@
+{
+  "manifest_id": "manifest-20260729",
+  "briefing_id": "hxp-briefing-2026-07-29",
+  "created_at": "2026-07-29T02:00:00Z",
+  "assets": [
+    {
+      "asset_id": "asset-20260729-poster-01",
+      "type": "poster_9x16",
+      "filename": "poster-01-ai-budget-governance-v1.png",
+      "related_item_id": "item-20260729-01",
+      "generation_prompt_version": "visual-generator-v1.0.0",
+      "visual_style": "hxp_blue_white_tech",
+      "quality_check": {
+        "logo_correct": true,
+        "text_verified": true,
+        "numbers_verified": true,
+        "layout_consistent": true,
+        "status": "passed"
+      }
+    }
+  ],
+  "quality_summary": {
+    "total_assets": 1,
+    "passed": 1,
+    "failed": 0,
+    "retry_count": 0
+  }
+}
