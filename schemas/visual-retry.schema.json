@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hengxiaopai.com/schemas/visual-retry.schema.json",
   "title": "HXP Targeted Visual Retry Plan",
-  "description": "只为失败或被驳回的主视觉生成定向重试任务，保留父请求和差异说明。",
+  "description": "只为失败或被驳回的主视觉生成定向重试任务，保留父请求和差异说明；事实错误必须退回编辑阶段。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -38,12 +38,19 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["eligible", "scheduled", "exhausted", "blocked_unchanged"],
+      "required": [
+        "eligible",
+        "scheduled",
+        "exhausted",
+        "blocked_unchanged",
+        "editorial_blocked"
+      ],
       "properties": {
         "eligible": {"type": "integer", "minimum": 0},
         "scheduled": {"type": "integer", "minimum": 0},
         "exhausted": {"type": "integer", "minimum": 0},
-        "blocked_unchanged": {"type": "integer", "minimum": 0}
+        "blocked_unchanged": {"type": "integer", "minimum": 0},
+        "editorial_blocked": {"type": "integer", "minimum": 0}
       }
     }
   },
@@ -78,6 +85,7 @@
         "retry_reason": {
           "type": "string",
           "enum": [
+            "fact_mismatch",
             "subject_mismatch",
             "composition_problem",
             "style_drift",
@@ -99,7 +107,7 @@
         },
         "decision": {
           "type": "string",
-          "enum": ["schedule", "exhausted", "blocked_unchanged"]
+          "enum": ["schedule", "exhausted", "blocked_unchanged", "editorial_blocked"]
         }
       }
     }
