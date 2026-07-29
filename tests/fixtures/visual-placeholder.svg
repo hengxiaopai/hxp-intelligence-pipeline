@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1872" height="1030" viewBox="0 0 1872 1030">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F7FCFF"/>
+      <stop offset="1" stop-color="#DCEEFF"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#23B7FF" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#0C5BFF" stop-opacity="0.08"/>
+    </radialGradient>
+  </defs>
+  <rect width="1872" height="1030" rx="42" fill="url(#bg)"/>
+  <circle cx="936" cy="500" r="300" fill="url(#orb)"/>
+  <g fill="none" stroke="#0C5BFF" stroke-opacity="0.34" stroke-width="4">
+    <circle cx="936" cy="500" r="370"/>
+    <circle cx="936" cy="500" r="420"/>
+    <path d="M210 730 C520 360 720 760 1020 430 C1300 120 1480 540 1690 290"/>
+  </g>
+  <g fill="#FFFFFF" stroke="#B9D7F5" stroke-width="3">
+    <rect x="250" y="190" width="330" height="190" rx="34"/>
+    <rect x="1290" y="650" width="330" height="190" rx="34"/>
+    <rect x="1210" y="160" width="260" height="150" rx="30"/>
+  </g>
+  <text x="936" y="970" text-anchor="middle" font-family="sans-serif" font-size="36" font-weight="700" fill="#56708F">PREVIEW PLACEHOLDER · NOT FOR PUBLICATION</text>
+</svg>
