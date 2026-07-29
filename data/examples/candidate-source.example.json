@@ -1,0 +1,13 @@
+{
+  "source_id": "src-github-dependabot-malware-20260728",
+  "title": "Dependabot alerts on malicious packages across more ecosystems",
+  "url": "https://github.blog/changelog/2026-07-28-dependabot-alerts-on-malicious-packages-across-more-ecosystems/",
+  "publisher": "GitHub",
+  "source_type": "github",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-28T00:00:00Z",
+  "retrieved_at": "2026-07-29T03:10:00Z",
+  "evidence_summary": "GitHub 官方 Changelog 说明 GitHub Advisory Database 已接入 OpenSSF malicious-packages 数据，并将扩展 Dependabot 恶意软件包告警覆盖。页面只提供发布日期，示例将时间规范化为当日 00:00 UTC。",
+  "verification_status": "verified",
+  "conflicts": []
+}
