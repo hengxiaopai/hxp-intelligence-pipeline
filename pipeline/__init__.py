@@ -1,4 +1,4 @@
-"""Normalization and deduplication primitives for HXP Intelligence Pipeline."""
+"""Core primitives for the HXP Intelligence Pipeline."""
 
 from .dedup import apply_decision, evaluate_candidate
 from .normalization import (
@@ -15,4 +15,9 @@ __all__ = [
     "event_fingerprint",
     "normalize_text",
     "topic_fingerprint",
+    "briefing_assembler",
+    "editorial_scoring",
+    "failure_reporting",
+    "history_commit",
+    "scheduler",
 ]

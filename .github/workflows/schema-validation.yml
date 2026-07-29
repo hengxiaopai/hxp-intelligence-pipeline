@@ -8,24 +8,28 @@ on:
       - "config/**"
       - "data/examples/**"
       - "data/daily/**"
+      - "data/state/**"
       - "collectors/**"
       - "pipeline/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
       - ".github/workflows/schema-validation.yml"
+      - ".github/workflows/daily-pipeline.yml"
   pull_request:
     paths:
       - "schemas/**"
       - "config/**"
       - "data/examples/**"
       - "data/daily/**"
+      - "data/state/**"
       - "collectors/**"
       - "pipeline/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
       - ".github/workflows/schema-validation.yml"
+      - ".github/workflows/daily-pipeline.yml"
   workflow_dispatch:
 
 permissions:
@@ -34,7 +38,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 8
 
     steps:
       - name: Checkout repository
@@ -65,6 +69,10 @@ jobs:
           scripts/run_daily_pipeline.py
           scripts/validate_daily_run.py
           scripts/generate_daily_run_20260729.py
+          scripts/plan_daily_run.py
+          scripts/execute_collection_plan.py
+          scripts/commit_daily_history.py
+          scripts/write_failure_report.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
@@ -75,10 +83,14 @@ jobs:
           pipeline/dedup.py
           pipeline/editorial_scoring.py
           pipeline/briefing_assembler.py
+          pipeline/scheduler.py
+          pipeline/history_commit.py
+          pipeline/failure_reporting.py
           tests/test_collectors.py
           tests/test_normalization_dedup.py
           tests/test_editorial_assembly.py
           tests/test_daily_run.py
+          tests/test_scheduler_history.py
 
       - name: Validate baseline examples
         run: python scripts/validate.py --examples
@@ -91,11 +103,13 @@ jobs:
           python scripts/validate.py --schema schemas/editorial-score.schema.json --data data/examples/editorial-scores.example.json
           python scripts/validate.py --schema schemas/briefing.schema.json --data data/examples/briefing-assembled.example.json
 
-      - name: Validate source registry
+      - name: Validate source registry and production state
         run: |
           python scripts/validate.py --schema schemas/source-registry.schema.json --data config/sources.json
           python scripts/source_registry.py --validate
           python scripts/validate_candidate.py
+          python scripts/validate.py --schema schemas/schedule-state.schema.json --data data/state/source-watermarks.json
+          python scripts/validate.py --schema schemas/dedup-index.schema.json --data data/state/dedup-index.json
 
       - name: Validate first archived daily run
         run: |
@@ -104,6 +118,51 @@ jobs:
 
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
+
+      - name: Exercise deterministic source planning
+        run: |
+          python scripts/plan_daily_run.py \
+            --now 2026-07-29T01:00:00Z \
+            --mode plan_only \
+            --output /tmp/hxp-daily-plan.json
+          python scripts/validate.py \
+            --schema schemas/daily-plan.schema.json \
+            --data /tmp/hxp-daily-plan.json
+          python scripts/plan_daily_run.py \
+            --now 2026-07-29T01:00:00Z \
+            --mode plan_only \
+            --output /tmp/hxp-daily-plan-repeat.json
+          cmp /tmp/hxp-daily-plan.json /tmp/hxp-daily-plan-repeat.json
+
+      - name: Exercise sanitized failure reporting
+        run: |
+          python scripts/write_failure_report.py \
+            --stage collection \
+            --error-type FixtureFailure \
+            --message "Authorization: Bearer test.secret token=hidden" \
+            --occurred-at 2026-07-29T01:05:00Z \
+            --source-registry-id registry-github-changelog \
+            --output /tmp/hxp-failure.json
+          python scripts/validate.py \
+            --schema schemas/failure-report.schema.json \
+            --data /tmp/hxp-failure.json
+          ! grep -q "test.secret" /tmp/hxp-failure.json
+          ! grep -q "token=hidden" /tmp/hxp-failure.json
+
+      - name: Verify pending run cannot advance production history
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATE_HASH="$(sha256sum data/state/source-watermarks.json)"
+          INDEX_HASH="$(sha256sum data/state/dedup-index.json)"
+          if python scripts/commit_daily_history.py \
+            --run-dir data/daily/2026-07-29 \
+            --apply; then
+            echo "Pending run unexpectedly advanced production history" >&2
+            exit 1
+          fi
+          test "$STATE_HASH" = "$(sha256sum data/state/source-watermarks.json)"
+          test "$INDEX_HASH" = "$(sha256sum data/state/dedup-index.json)"
 
       - name: Exercise RSS and HTML fixture CLIs
         run: |

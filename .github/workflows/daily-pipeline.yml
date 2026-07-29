@@ -1,0 +1,154 @@
+name: HXP Daily Pipeline Plan
+
+on:
+  schedule:
+    # 09:00 Asia/Shanghai (UTC+8, no daylight-saving changes)
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      live_enabled:
+        description: "Explicitly enable registered live RSS/HTML collection"
+        required: false
+        type: boolean
+        default: false
+      issue_enabled:
+        description: "Allow a sanitized GitHub Issue when this run fails"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: hxp-daily-pipeline
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LIVE_ENABLED: ${{ (github.event_name == 'schedule' && vars.HXP_LIVE_COLLECTION_ENABLED == 'true') || (github.event_name == 'workflow_dispatch' && inputs.live_enabled) }}
+      ISSUE_ENABLED: ${{ (github.event_name == 'schedule' && vars.HXP_FAILURE_ISSUES_ENABLED == 'true') || (github.event_name == 'workflow_dispatch' && inputs.issue_enabled) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+
+      - name: Generate deterministic collection plan
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          mkdir -p /tmp/hxp-plan
+          if [[ "$LIVE_ENABLED" == "true" ]]; then
+            MODE="live"
+            LIVE_FLAG="--live-enabled"
+          else
+            MODE="plan_only"
+            LIVE_FLAG=""
+          fi
+          python scripts/plan_daily_run.py \
+            --now "$NOW" \
+            --mode "$MODE" \
+            $LIVE_FLAG \
+            --output /tmp/hxp-plan/daily-plan.json
+          python scripts/validate.py \
+            --schema schemas/daily-plan.schema.json \
+            --data /tmp/hxp-plan/daily-plan.json
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload collection plan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-daily-plan-${{ github.run_id }}
+          path: /tmp/hxp-plan/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Execute explicitly enabled live sources
+        if: env.LIVE_ENABLED == 'true'
+        run: |
+          python scripts/execute_collection_plan.py \
+            --plan /tmp/hxp-plan/daily-plan.json \
+            --output-dir /tmp/hxp-raw
+
+      - name: Upload raw snapshots
+        if: always() && env.LIVE_ENABLED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-raw-snapshots-${{ github.run_id }}
+          path: /tmp/hxp-raw/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Write sanitized failure report
+        if: failure()
+        id: failure_report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hxp-failure
+          ISSUE_FLAG=""
+          if [[ "$ISSUE_ENABLED" == "true" ]]; then
+            ISSUE_FLAG="--issue-enabled"
+          fi
+          python scripts/write_failure_report.py \
+            --stage collection \
+            --error-type GitHubActionsFailure \
+            --message "Daily pipeline run ${GITHUB_RUN_ID} failed; inspect the authenticated GitHub Actions logs." \
+            --occurred-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            $ISSUE_FLAG \
+            --history-dir data/failures \
+            --output /tmp/hxp-failure/report.json
+          python scripts/validate.py \
+            --schema schemas/failure-report.schema.json \
+            --data /tmp/hxp-failure/report.json
+          echo "fingerprint=$(jq -r .fingerprint /tmp/hxp-failure/report.json)" >> "$GITHUB_OUTPUT"
+          echo "issue_eligible=$(jq -r .issue_eligible /tmp/hxp-failure/report.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-failure-${{ github.run_id }}
+          path: /tmp/hxp-failure/report.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create deduplicated failure issue
+        if: failure() && env.ISSUE_ENABLED == 'true' && steps.failure_report.outputs.issue_eligible == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FINGERPRINT: ${{ steps.failure_report.outputs.fingerprint }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXISTING="$(gh issue list \
+            --state open \
+            --search "$FINGERPRINT in:title" \
+            --json number \
+            --jq 'length')"
+          if [[ "$EXISTING" != "0" ]]; then
+            echo "Open failure issue already exists for $FINGERPRINT"
+            exit 0
+          fi
+          gh issue create \
+            --title "[Daily Pipeline Failure] $FINGERPRINT" \
+            --label automation \
+            --label security \
+            --body "A sanitized daily pipeline failure was recorded.\n\n- Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\n- Fingerprint: \\`$FINGERPRINT\\`\n- No credentials, cookies, authorization headers, or private page content are included."
