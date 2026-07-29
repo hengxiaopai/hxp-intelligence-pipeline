@@ -9,8 +9,10 @@ on:
       - "data/examples/**"
       - "data/daily/**"
       - "data/state/**"
+      - "assets/**"
       - "collectors/**"
       - "pipeline/**"
+      - "visual/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
@@ -23,8 +25,10 @@ on:
       - "data/examples/**"
       - "data/daily/**"
       - "data/state/**"
+      - "assets/**"
       - "collectors/**"
       - "pipeline/**"
+      - "visual/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
@@ -38,7 +42,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
 
     steps:
       - name: Checkout repository
@@ -50,6 +54,11 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: requirements-dev.txt
+
+      - name: Install system visual dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2 libpango-1.0-0 fonts-noto-cjk
 
       - name: Install validation dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
@@ -73,6 +82,9 @@ jobs:
           scripts/execute_collection_plan.py
           scripts/commit_daily_history.py
           scripts/write_failure_report.py
+          scripts/build_visual_queue.py
+          scripts/render_posters.py
+          scripts/validate_visual_assets.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
@@ -86,11 +98,18 @@ jobs:
           pipeline/scheduler.py
           pipeline/history_commit.py
           pipeline/failure_reporting.py
+          visual/__init__.py
+          visual/layout.py
+          visual/queue.py
+          visual/rasterizer.py
+          visual/svg_renderer.py
+          visual/pipeline.py
           tests/test_collectors.py
           tests/test_normalization_dedup.py
           tests/test_editorial_assembly.py
           tests/test_daily_run.py
           tests/test_scheduler_history.py
+          tests/test_visual_pipeline.py
 
       - name: Validate baseline examples
         run: python scripts/validate.py --examples
@@ -204,6 +223,46 @@ jobs:
           python scripts/validate.py --schema schemas/editorial-score.schema.json --data /tmp/hxp-editorial-scores.json
           python scripts/validate.py --schema schemas/briefing.schema.json --data /tmp/hxp-briefing.json
           grep -q "不构成投资建议" /tmp/hxp-briefing.md
+
+      - name: Exercise fixed SVG and PNG visual preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hxp-visual-run /tmp/hxp-visual
+          cp -R data/daily/2026-07-29 /tmp/hxp-visual-run
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('/tmp/hxp-visual-run/run.json')
+          run = json.loads(path.read_text(encoding='utf-8'))
+          run['review_status'] = 'approved'
+          run['publication_allowed'] = True
+          path.write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+          mkdir -p /tmp/hxp-visual/posters
+          python scripts/build_visual_queue.py \
+            --run-dir /tmp/hxp-visual-run \
+            --logo tests/fixtures/hxp-test-logo.svg \
+            --allow-placeholder \
+            --output /tmp/hxp-visual/queue.json
+          python scripts/render_posters.py \
+            --queue /tmp/hxp-visual/queue.json \
+            --output-dir /tmp/hxp-visual/posters \
+            --placeholder tests/fixtures/visual-placeholder.svg \
+            --manifest /tmp/hxp-visual/manifest.json
+          python scripts/validate_visual_assets.py \
+            --queue /tmp/hxp-visual/queue.json \
+            --manifest /tmp/hxp-visual/manifest.json
+          test "$(find /tmp/hxp-visual/posters -name '*.svg' | wc -l)" -eq 6
+          test "$(find /tmp/hxp-visual/posters -name '*.png' | wc -l)" -eq 6
+
+      - name: Upload visual preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-visual-preview-2026-07-29
+          path: /tmp/hxp-visual
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Verify generated outputs are reproducible
         run: |
