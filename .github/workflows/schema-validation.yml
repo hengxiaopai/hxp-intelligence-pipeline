@@ -1,0 +1,47 @@
+name: Schema Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "schemas/**"
+      - "data/examples/**"
+      - "scripts/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/schema-validation.yml"
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "data/examples/**"
+      - "scripts/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/schema-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validation dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+
+      - name: Compile validator
+        run: python -m py_compile scripts/validate.py
+
+      - name: Validate schemas, examples, and references
+        run: python scripts/validate.py --examples
