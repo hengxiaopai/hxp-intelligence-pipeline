@@ -26,6 +26,8 @@
 hxp-intelligence-pipeline/
 ├── automation/
 │   └── chatgpt-daily-task.md
+├── config/
+│   └── sources.json
 ├── data/
 │   └── examples/
 ├── docs/
@@ -33,6 +35,7 @@ hxp-intelligence-pipeline/
 │   ├── CONTENT-SPEC.md
 │   ├── PROMPT-ENGINE.md
 │   ├── RUNBOOK.md
+│   ├── SOURCE-REGISTRY.md
 │   └── VISUAL-SPEC.md
 ├── prompts/
 │   ├── dedup-agent.md
@@ -43,10 +46,14 @@ hxp-intelligence-pipeline/
 │   └── visual-generator.md
 ├── schemas/
 │   ├── briefing.schema.json
+│   ├── candidate.schema.json
 │   ├── manifest.schema.json
+│   ├── source-registry.schema.json
 │   └── source.schema.json
 ├── scripts/
-│   └── validate.py
+│   ├── source_registry.py
+│   ├── validate.py
+│   └── validate_candidate.py
 ├── .github/workflows/
 │   └── schema-validation.yml
 └── requirements-dev.txt
@@ -64,6 +71,23 @@ python -m pip install -r requirements-dev.txt
 
 ```bash
 python scripts/validate.py --examples
+python scripts/source_registry.py --validate
+python scripts/validate_candidate.py
+```
+
+查看首批启用来源：
+
+```bash
+python scripts/source_registry.py --list --active-only
+```
+
+输出 Collector 使用的来源计划：
+
+```bash
+python scripts/source_registry.py \
+  --emit-plan \
+  --active-only \
+  --max-priority 3
 ```
 
 验证单个日报：
@@ -74,7 +98,7 @@ python scripts/validate.py \
   --data data/YYYY-MM-DD/briefing.json
 ```
 
-详细运行说明见 [`docs/RUNBOOK.md`](docs/RUNBOOK.md)。
+详细运行说明见 [`docs/RUNBOOK.md`](docs/RUNBOOK.md)，来源策略见 [`docs/SOURCE-REGISTRY.md`](docs/SOURCE-REGISTRY.md)。
 
 ## 自动化入口
 
@@ -94,4 +118,5 @@ python scripts/validate.py \
 - Phase 1.1：核心数据 Schema ✅
 - Phase 1.2：六 Agent Prompt Engine ✅
 - Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
-- Phase 2：首批真实信息源接入与候选事件池 ⏳
+- Phase 2.1：官方来源注册表与候选事件池 ✅
+- Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ⏳
