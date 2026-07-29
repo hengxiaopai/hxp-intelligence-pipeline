@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/content-package.schema.json",
+  "title": "HXP Multi-platform Content Package Batch",
+  "description": "由已批准简报和已验证多平台视觉资产生成的草稿内容包。Phase 5.1 不执行任何平台写入。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_batch_id",
+    "briefing_id",
+    "export_manifest_id",
+    "date",
+    "generated_at",
+    "language",
+    "write_actions_enabled",
+    "packages",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "package_batch_id": {"type": "string", "pattern": "^content-package-batch-[0-9]{8}$"},
+    "briefing_id": {"type": "string", "pattern": "^hxp-briefing-[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "export_manifest_id": {"type": "string", "pattern": "^export-manifest-[0-9]{8}$"},
+    "date": {"type": "string", "format": "date"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "language": {"type": "string", "const": "zh-CN"},
+    "write_actions_enabled": {"type": "boolean", "const": false},
+    "packages": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/package"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "validated", "blocked", "platform_counts"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "validated": {"type": "integer", "minimum": 0},
+        "blocked": {"type": "integer", "minimum": 0},
+        "platform_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wechat", "xiaohongshu", "douyin", "x", "website"],
+          "properties": {
+            "wechat": {"type": "integer", "minimum": 0},
+            "xiaohongshu": {"type": "integer", "minimum": 0},
+            "douyin": {"type": "integer", "minimum": 0},
+            "x": {"type": "integer", "minimum": 0},
+            "website": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["export_id", "preset", "order", "path", "sha256", "width", "height"],
+      "properties": {
+        "export_id": {"type": "string", "pattern": "^export-[0-9]{8}-[0-9]{2}-[a-z0-9_-]{3,40}$"},
+        "preset": {
+          "type": "string",
+          "enum": ["vertical_9x16", "portrait_3x4", "landscape_16x9", "wechat_cover_235x1"]
+        },
+        "order": {"type": "integer", "minimum": 1},
+        "path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "width": {"type": "integer", "minimum": 500},
+        "height": {"type": "integer", "minimum": 500}
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "summary",
+        "body_markdown",
+        "caption",
+        "thread",
+        "hashtags",
+        "seo_title",
+        "seo_description",
+        "slug",
+        "source_labels",
+        "risk_disclaimer"
+      ],
+      "properties": {
+        "title": {"type": "string", "maxLength": 100},
+        "summary": {"type": "string", "maxLength": 300},
+        "body_markdown": {"type": "string", "maxLength": 30000},
+        "caption": {"type": "string", "maxLength": 5000},
+        "thread": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {"type": "string", "maxLength": 1000}
+        },
+        "hashtags": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^#[^#\\s]{1,40}$"}
+        },
+        "seo_title": {"type": "string", "maxLength": 100},
+        "seo_description": {"type": "string", "maxLength": 300},
+        "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,120}$"},
+        "source_labels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "maxLength": 120}
+        },
+        "risk_disclaimer": {"type": ["string", "null"], "maxLength": 300}
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_id",
+        "platform",
+        "status",
+        "content_hash",
+        "content",
+        "assets",
+        "dependencies",
+        "risk_flags",
+        "validations"
+      ],
+      "properties": {
+        "package_id": {
+          "type": "string",
+          "pattern": "^content-package-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+        },
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "status": {"type": "string", "enum": ["draft", "validated", "blocked"]},
+        "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "content": {"$ref": "#/$defs/content"},
+        "assets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/asset"}},
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["briefing_id", "export_manifest_id"],
+          "properties": {
+            "briefing_id": {"type": "string", "pattern": "^hxp-briefing-"},
+            "export_manifest_id": {"type": "string", "pattern": "^export-manifest-"}
+          }
+        },
+        "risk_flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "investment_expression",
+              "unconfirmed_claim",
+              "policy_sensitivity",
+              "copyright",
+              "platform_review",
+              "security",
+              "none"
+            ]
+          }
+        },
+        "validations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "platform_profile_passed",
+            "assets_verified",
+            "sources_present",
+            "internal_content_absent",
+            "sensitive_data_absent",
+            "disclaimer_present_when_required"
+          ],
+          "properties": {
+            "platform_profile_passed": {"type": "boolean"},
+            "assets_verified": {"type": "boolean"},
+            "sources_present": {"type": "boolean"},
+            "internal_content_absent": {"type": "boolean"},
+            "sensitive_data_absent": {"type": "boolean"},
+            "disclaimer_present_when_required": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}

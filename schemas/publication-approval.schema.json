@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/publication-approval.schema.json",
+  "title": "HXP Publication Approval",
+  "description": "记录主理人对具体平台、账号占位符、文案哈希和图片顺序的明确确认。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_id",
+    "plan_id",
+    "approved_at",
+    "approver",
+    "decisions",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "approval_id": {"type": "string", "pattern": "^publication-approval-[0-9]{8}-[a-z0-9-]{3,40}$"},
+    "plan_id": {"type": "string", "pattern": "^publication-plan-[0-9]{8}$"},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "approver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "identifier"],
+      "properties": {
+        "type": {"type": "string", "const": "human"},
+        "identifier": {"type": "string", "minLength": 1, "maxLength": 120}
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/decision"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "approved", "rejected", "blocked"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "approved": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "blocked": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry_id",
+        "platform",
+        "decision",
+        "account_ref_confirmed",
+        "content_hash_confirmed",
+        "asset_hashes_confirmed",
+        "asset_order_confirmed",
+        "risk_reviewed",
+        "action_confirmed",
+        "notes"
+      ],
+      "properties": {
+        "entry_id": {
+          "type": "string",
+          "pattern": "^publication-entry-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+        },
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "decision": {"type": "string", "enum": ["approved", "rejected", "blocked"]},
+        "account_ref_confirmed": {"type": "boolean"},
+        "content_hash_confirmed": {"type": "boolean"},
+        "asset_hashes_confirmed": {"type": "boolean"},
+        "asset_order_confirmed": {"type": "boolean"},
+        "risk_reviewed": {"type": "boolean"},
+        "action_confirmed": {"type": "boolean"},
+        "notes": {"type": ["string", "null"], "maxLength": 600}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"decision": {"const": "approved"}}},
+          "then": {
+            "properties": {
+              "account_ref_confirmed": {"const": true},
+              "content_hash_confirmed": {"const": true},
+              "asset_hashes_confirmed": {"const": true},
+              "asset_order_confirmed": {"const": true},
+              "risk_reviewed": {"const": true},
+              "action_confirmed": {"const": true}
+            }
+          }
+        }
+      ]
+    }
+  }
+}
