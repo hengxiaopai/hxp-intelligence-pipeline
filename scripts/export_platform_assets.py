@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from visual.multiformat import MultiFormatExportError, export_platform_assets  # noqa: E402
+from visual.export_polish import ExportPolishError, export_platform_assets  # noqa: E402
+from visual.multiformat import MultiFormatExportError  # noqa: E402
 from visual.pipeline import write_json  # noqa: E402
 from visual.queue import load_json  # noqa: E402
 from visual.rasterizer import RasterizationError, assert_cjk_font_available  # noqa: E402
@@ -80,6 +81,7 @@ def main() -> int:
             )
         write_json(args.manifest, manifest)
     except (
+        ExportPolishError,
         MultiFormatExportError,
         RasterizationError,
         OSError,
