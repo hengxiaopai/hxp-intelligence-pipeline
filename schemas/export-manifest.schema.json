@@ -71,7 +71,7 @@
         "errors"
       ],
       "properties": {
-        "export_id": {"type": "string", "pattern": "^export-[0-9]{8}-[0-9]{2}-[a-z0-9-]{3,40}$"},
+        "export_id": {"type": "string", "pattern": "^export-[0-9]{8}-[0-9]{2}-[a-z0-9_-]{3,40}$"},
         "job_id": {"type": "string", "pattern": "^visual-job-[0-9]{8}-[0-9]{2}$"},
         "item_id": {"type": ["string", "null"], "pattern": "^item-[0-9]{8}-[0-9]{2}$"},
         "preset": {
