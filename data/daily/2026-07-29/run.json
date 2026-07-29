@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "daily-run-20260729",
+  "date": "2026-07-29",
+  "timezone": "Asia/Shanghai",
+  "generated_at": "2026-07-29T12:00:00+08:00",
+  "mode": "archived_real_sources",
+  "status": "validated",
+  "review_status": "pending",
+  "publication_allowed": false,
+  "source_count": 6,
+  "selected_counts": {
+    "new_items": 5,
+    "continuation_items": 0,
+    "rejected_candidates": 2
+  },
+  "artifacts": {
+    "candidate_pool": {
+      "path": "data/daily/2026-07-29/candidate-pool.json",
+      "sha256": "e85adf17dc945b9a383bd654675dbd6ab489f06919876e3ab5093754f2bd67ff",
+      "byte_size": 35984
+    },
+    "editorial_scores": {
+      "path": "data/daily/2026-07-29/editorial-scores.json",
+      "sha256": "9f95709917b04d15967b391ae8825727b1b92a58ecedec9e7afb812ec70fce24",
+      "byte_size": 4942
+    },
+    "briefing_json": {
+      "path": "data/daily/2026-07-29/briefing.json",
+      "sha256": "79c20ae8817f856547076338acaa0c67a6b652bf50366b4bc36f9a98eaae471b",
+      "byte_size": 16649
+    },
+    "briefing_markdown": {
+      "path": "data/daily/2026-07-29/briefing.md",
+      "sha256": "6d42b856e1ccfcf52d33c445b1315abb1b969c3946c36a1c2999837ae83ef701",
+      "byte_size": 6367
+    },
+    "sources": [
+      {
+        "path": "data/daily/2026-07-29/sources/src-github-actions-workflow-approval-20260728.json",
+        "sha256": "a57b34e58e34d2b00b1736667c954b9bd24ad830875349ded17b872d3a3f4db0",
+        "byte_size": 672
+      },
+      {
+        "path": "data/daily/2026-07-29/sources/src-github-copilot-app-policy-20260727.json",
+        "sha256": "7dbeb5c9fe6b365c6b5adf8c82b430aa4bf0509e1d1f8d6384d13ea98cd1b484",
+        "byte_size": 634
+      },
+      {
+        "path": "data/daily/2026-07-29/sources/src-github-copilot-jetbrains-governance-20260727.json",
+        "sha256": "261830b71116f9fcf142defb2079dbf2b9f898f3a5af34b6b145b196941b6a0d",
+        "byte_size": 767
+      },
+      {
+        "path": "data/daily/2026-07-29/sources/src-github-copilot-managed-settings-20260727.json",
+        "sha256": "e5d2c0b2bba24a230d6d33047c7de53a5d8dfa851d41d8b53b7d6376b3540c5b",
+        "byte_size": 685
+      },
+      {
+        "path": "data/daily/2026-07-29/sources/src-github-dependabot-malware-20260728.json",
+        "sha256": "3a9fcd77e2675fc7e1bb9bc91bf95ed90f083936a997624aefb2e833c7211b62",
+        "byte_size": 648
+      },
+      {
+        "path": "data/daily/2026-07-29/sources/src-openai-work-crossover-20260727.json",
+        "sha256": "4008929c0007bdf7e2fd332a11d832866401e8f6f69603db228a805f487b6a5f",
+        "byte_size": 627
+      }
+    ]
+  },
+  "validations": {
+    "candidate_source_references": true,
+    "source_schema": true,
+    "score_schema": true,
+    "briefing_schema": true,
+    "artifact_hashes": true,
+    "public_markdown_safe": true,
+    "deterministic_outputs": true
+  },
+  "notes": [
+    "该运行使用已归档并人工核对的一手来源，不在 CI 中访问外网。",
+    "review_status=pending 时 publication_allowed 必须保持 false。",
+    "正式海报须在人工审核通过后单独生成。"
+  ]
+}

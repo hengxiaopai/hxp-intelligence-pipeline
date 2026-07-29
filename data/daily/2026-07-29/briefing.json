@@ -1,0 +1,430 @@
+{
+  "schema_version": "1.0.0",
+  "briefing_id": "hxp-briefing-2026-07-29",
+  "date": "2026-07-29",
+  "timezone": "Asia/Shanghai",
+  "generated_at": "2026-07-29T12:00:00+08:00",
+  "language": "zh-CN",
+  "title": "珩小派多元情报简报｜2026.07.29",
+  "editorial_policy": {
+    "target_min_items": 5,
+    "target_max_items": 8,
+    "actual_new_item_count": 5,
+    "shortfall_reason": null,
+    "new_or_new_angle_ratio": 1.0,
+    "dedup_windows_days": [
+      3,
+      7,
+      30
+    ],
+    "source_requirements_met": true,
+    "market_session": "in_session"
+  },
+  "new_items": [
+    {
+      "item_id": "item-20260729-01",
+      "event_fingerprint": "evt-265a63fe22b6ac49fb6f36bbb1134394",
+      "status": "new",
+      "title": "AI正在重组岗位边界",
+      "subtitle": "一人公司获得更多跨职能执行能力",
+      "summary": "OpenAI的新研究显示，AI不仅提高原岗位效率，还让用户直接承担原本属于其他职业的任务。这种任务跨界在小企业中更明显，正在改变团队分工和个人技能组合。",
+      "primary_category": "career_skills",
+      "information_types": [
+        "research_report"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 98,
+        "rationale": "来源权威度 98，证据质量 98，共记录 2 条证据声明。",
+        "evidence_count": 2
+      },
+      "importance_score": 95,
+      "novelty_score": 92,
+      "why_it_matters": [
+        "AI价值从提效扩展到减少跨部门交接",
+        "小企业与一人公司更容易成为跨职能受益者",
+        "岗位变化可能先体现在任务组合而非职位消失"
+      ],
+      "follow_up": [
+        "不同职业的长期任务迁移是否持续",
+        "跨界工作对质量、责任与薪酬的影响",
+        "一人公司应优先补齐哪些复合技能"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "deep_report",
+        "product_prototype"
+      ],
+      "audiences": [
+        "general_public",
+        "founders",
+        "creators",
+        "students"
+      ],
+      "source_ids": [
+        "src-openai-work-crossover-20260727"
+      ],
+      "primary_source_id": "src-openai-work-crossover-20260727",
+      "first_seen": "2026-07-29T12:00:00+08:00",
+      "last_updated": "2026-07-29T12:00:00+08:00",
+      "selected_reason": "官方大样本研究直接支持结论，并与一人公司能力边界高度相关。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "一个人连接设计、营销、分析、法务与技术五个任务模块的跨职能地图",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得把任务跨界写成岗位已被替代",
+          "不得虚构中国市场或收入数据"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-02",
+      "event_fingerprint": "evt-4a5f93f5072a8fd8a9e4a5005df54cb2",
+      "status": "new",
+      "title": "AI IDE进入治理阶段",
+      "subtitle": "可观测、模型、Token与Agent开始统一管理",
+      "summary": "Copilot for JetBrains把OpenTelemetry、Token上限、模型开关、MCP和自定义Agent放进同一开发环境。AI Coding竞争正在从补全能力转向可观测、成本和执行治理。",
+      "primary_category": "developer_tools",
+      "information_types": [
+        "github_update"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 99,
+        "rationale": "来源权威度 99，证据质量 99，共记录 3 条证据声明。",
+        "evidence_count": 3
+      },
+      "importance_score": 95,
+      "novelty_score": 88,
+      "why_it_matters": [
+        "企业需要知道Agent调用了什么、花了多少",
+        "BYOK与自定义模型必须配套Token边界",
+        "MCP和自定义Agent扩大能力也扩大权限面"
+      ],
+      "follow_up": [
+        "遥测数据能否区分模型、工具和任务",
+        "AI credits与Token预算如何统一",
+        "MCP权限和命令审批是否可集中审计"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "product_prototype",
+        "deep_report"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-github-copilot-jetbrains-governance-20260727"
+      ],
+      "primary_source_id": "src-github-copilot-jetbrains-governance-20260727",
+      "first_seen": "2026-07-29T12:00:00+08:00",
+      "last_updated": "2026-07-29T12:00:00+08:00",
+      "selected_reason": "官方更新同时覆盖可观测、成本、模型和Agent治理，产品机会清晰。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "IDE中心连接OpenTelemetry、Token预算、模型路由、MCP与Agent权限面板",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得仿造真实Copilot界面",
+          "不得虚构企业节省比例或Token价格"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-03",
+      "event_fingerprint": "evt-616181b24c9d6bb5964bce5e6e440719",
+      "status": "new",
+      "title": "Copilot统一企业治理",
+      "subtitle": "Agent从单一客户端走向全入口策略控制",
+      "summary": "GitHub把Copilot App访问权与CLI解耦，并让App和Cloud Agent接受同一套托管设置。企业可以统一控制插件、市场、审批绕过和默认模型，Agent治理开始覆盖完整客户端矩阵。",
+      "primary_category": "business_strategy",
+      "information_types": [
+        "github_update"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 99,
+        "rationale": "来源权威度 99，证据质量 99，共记录 2 条证据声明。",
+        "evidence_count": 2
+      },
+      "importance_score": 94,
+      "novelty_score": 90,
+      "why_it_matters": [
+        "任何未纳管客户端都会成为权限缺口",
+        "Agent采用率增长推动集中策略和审计需求",
+        "模型选择、插件与命令审批正在合并为治理层"
+      ],
+      "follow_up": [
+        "策略下发延迟与离线行为",
+        "Cloud Agent执行记录的审计深度",
+        "不同IDE与桌面客户端的策略一致性"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "poster",
+        "product_prototype",
+        "deep_report"
+      ],
+      "audiences": [
+        "enterprise_users",
+        "developers",
+        "founders"
+      ],
+      "source_ids": [
+        "src-github-copilot-app-policy-20260727",
+        "src-github-copilot-managed-settings-20260727"
+      ],
+      "primary_source_id": "src-github-copilot-app-policy-20260727",
+      "first_seen": "2026-07-29T12:00:00+08:00",
+      "last_updated": "2026-07-29T12:00:00+08:00",
+      "selected_reason": "两项官方更新构成同一企业治理主线，合并处理避免重复拆条。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "企业策略中心向Copilot App、CLI、VS Code、JetBrains与Cloud Agent同步护栏",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得声称策略已经覆盖所有GitHub产品",
+          "不得虚构客户名单或采用率"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-04",
+      "event_fingerprint": "evt-c385275b6ed98234245727947b9022fc",
+      "status": "new",
+      "title": "GitHub拦截恶意工作流",
+      "subtitle": "AI与自动化时代，CI审批重新成为安全闸门",
+      "summary": "近期供应链攻击会利用被盗GitHub凭据写入恶意Actions工作流。GitHub现对部分可疑运行先行暂停，要求具有写权限的协作者在网页端确认后再执行。",
+      "primary_category": "risk_counter_signal",
+      "information_types": [
+        "github_update",
+        "security_incident"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 99,
+        "rationale": "来源权威度 99，证据质量 99，共记录 2 条证据声明。",
+        "evidence_count": 2
+      },
+      "importance_score": 90,
+      "novelty_score": 95,
+      "why_it_matters": [
+        "CI/CD已成为凭据窃取和横向攻击的重要入口",
+        "自动化越强，执行前审批和最小权限越重要",
+        "公共开源项目需要重新审视Actions写权限"
+      ],
+      "follow_up": [
+        "检测规则的误报率和覆盖范围",
+        "私有仓库与Enterprise Server是否跟进",
+        "组织能否查看被拦截工作流的审计数据"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "poster"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-github-actions-workflow-approval-20260728"
+      ],
+      "primary_source_id": "src-github-actions-workflow-approval-20260728",
+      "first_seen": "2026-07-29T12:00:00+08:00",
+      "last_updated": "2026-07-29T12:00:00+08:00",
+      "selected_reason": "官方安全更新具有明确行为变化和直接供应链风险，时效性高。",
+      "risk_flags": [
+        "security_sensitive"
+      ],
+      "visual_brief": {
+        "concept": "CI流水线在执行前经过红色风险扫描与人工批准闸门",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得展示真实攻击代码或凭据",
+          "不得声称所有恶意工作流都能被识别"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-05",
+      "event_fingerprint": "evt-295a1c46248445234cdb3515e789a81b",
+      "status": "new",
+      "title": "Dependabot扩大恶意包告警",
+      "subtitle": "软件供应链风险从npm延伸至更多生态",
+      "summary": "GitHub把OpenSSF恶意软件包数据接入Advisory Database，Dependabot可在更多依赖生态中识别已知恶意版本，现有启用用户无需重新配置。",
+      "primary_category": "developer_tools",
+      "information_types": [
+        "github_update",
+        "security_incident"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 99,
+        "rationale": "来源权威度 99，证据质量 99，共记录 2 条证据声明。",
+        "evidence_count": 2
+      },
+      "importance_score": 88,
+      "novelty_score": 91,
+      "why_it_matters": [
+        "恶意依赖已成为AI生成项目的现实风险",
+        "跨生态数据聚合提高供应链发现能力",
+        "自动生成代码仍需依赖清单与告警治理"
+      ],
+      "follow_up": [
+        "PyPI等生态的覆盖完整度",
+        "私有包同名导致的误报治理",
+        "告警到自动修复之间的安全边界"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "poster",
+        "deep_report"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-github-dependabot-malware-20260728"
+      ],
+      "primary_source_id": "src-github-dependabot-malware-20260728",
+      "first_seen": "2026-07-29T12:00:00+08:00",
+      "last_updated": "2026-07-29T12:00:00+08:00",
+      "selected_reason": "官方更新直接改变依赖安全覆盖，适合AI Coding安全选题。",
+      "risk_flags": [
+        "security_sensitive"
+      ],
+      "visual_brief": {
+        "concept": "npm与PyPI依赖节点汇入统一恶意软件数据库和Dependabot盾牌",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构被感染项目数量",
+          "不得声称告警等同于自动清除风险"
+        ]
+      }
+    }
+  ],
+  "continuation_items": [],
+  "content_opportunities": [
+    {
+      "opportunity_id": "content-20260729-01",
+      "wechat_title": "AI不是只让你做得更快，而是在让你跨界工作",
+      "douyin_title": "一个人开始承担五个岗位的任务",
+      "angle": "用OpenAI大样本研究解释任务跨界，重点服务一人公司、自由职业者和小团队。",
+      "visual_direction": "一个人连接设计、营销、技术、分析和法务五个任务岛，标注任务迁移而非岗位消失。",
+      "related_item_ids": [
+        "item-20260729-01"
+      ]
+    },
+    {
+      "opportunity_id": "content-20260729-02",
+      "wechat_title": "GitHub为何开始在Actions执行前增加人工闸门？",
+      "douyin_title": "恶意工作流还没跑，就被GitHub拦住了",
+      "angle": "从凭据窃取和供应链攻击解释自动化审批、最小权限与审计的重要性。",
+      "visual_direction": "CI流水线、风险扫描、凭据保险箱和人工批准四段结构。",
+      "related_item_ids": [
+        "item-20260729-04",
+        "item-20260729-05"
+      ]
+    },
+    {
+      "opportunity_id": "content-20260729-03",
+      "wechat_title": "AI Coding下一阶段：不是更会写，而是更可控",
+      "douyin_title": "Copilot开始管Token、模型、MCP和权限了",
+      "angle": "把JetBrains可观测更新与Copilot全客户端治理合并，拆解企业AI Coding控制面。",
+      "visual_direction": "IDE与企业策略中心之间连接模型、Token、MCP、插件、审批和遥测模块。",
+      "related_item_ids": [
+        "item-20260729-02",
+        "item-20260729-03"
+      ]
+    }
+  ],
+  "product_opportunity": {
+    "title": "一人公司AI任务边界与Agent治理台",
+    "verdict": "build",
+    "score": 97,
+    "target_users": [
+      "一人公司",
+      "独立开发者",
+      "使用多个AI Coding工具的小团队"
+    ],
+    "pain_point": "用户难以判断哪些任务适合跨界交给AI，也无法统一查看模型、Token、MCP、权限和执行风险。",
+    "mvp": [
+      "记录任务原属岗位、当前执行者与使用模型",
+      "汇总Token、AI credits、工具调用和耗时",
+      "展示MCP、文件、终端和URL访问权限",
+      "对高风险命令和跨岗位任务设置人工确认",
+      "生成每周任务跨界与成本复盘"
+    ],
+    "seven_day_feasibility": true,
+    "payment_signal": "medium",
+    "competition_level": "medium",
+    "hxp_advantage": "珩小派同时具备一人公司实践、AI Coding工作流和情报内容沉淀，可先从自用工具验证。",
+    "evidence_item_ids": [
+      "item-20260729-01",
+      "item-20260729-02",
+      "item-20260729-03"
+    ]
+  },
+  "risk_reminder": {
+    "title": "不要把任务跨界写成岗位已经消失",
+    "risk_type": "unconfirmed_claim",
+    "description": "OpenAI研究观察到用户借助AI承担其他职业的任务，但这不等于专业岗位已经被替代。内容应区分任务迁移、岗位重组和就业净变化三个层次。",
+    "safe_wording": [
+      "任务边界正在变化",
+      "部分用户开始承担其他职业的任务",
+      "长期岗位影响仍需持续观察"
+    ]
+  },
+  "weekly_threads": {
+    "keywords": [
+      "任务跨界",
+      "一人公司",
+      "AI Coding治理",
+      "OpenTelemetry",
+      "Token预算",
+      "MCP权限",
+      "供应链安全"
+    ],
+    "strongest_trend": "AI能力正在从生成与补全进入跨岗位执行，同时企业把可观测、成本、权限和安全护栏纳入统一治理。",
+    "deep_dive_topic": "从任务跨界到Agent治理：一人公司如何扩大能力而不失去控制",
+    "productization_opportunity": "面向一人公司和小团队的任务边界、模型成本、工具权限与执行审计控制台"
+  },
+  "rejected_candidates": [
+    {
+      "candidate_id": "candidate-20260729-006",
+      "title": "Copilot App获得独立访问开关",
+      "rejection_reason": "duplicate_event",
+      "note": "3 天窗口内存在同一事件；证据声明 1 条，其中直接证据 1 条"
+    },
+    {
+      "candidate_id": "candidate-20260729-007",
+      "title": "AI已经让专业岗位失去意义",
+      "rejection_reason": "low_confidence",
+      "note": "候选事件初步置信度为低；风险项合计扣减 14 分；证据声明 1 条，其中直接证据 0 条"
+    }
+  ],
+  "source_index": [
+    "src-github-actions-workflow-approval-20260728",
+    "src-github-copilot-app-policy-20260727",
+    "src-github-copilot-jetbrains-governance-20260727",
+    "src-github-copilot-managed-settings-20260727",
+    "src-github-dependabot-malware-20260728",
+    "src-openai-work-crossover-20260727"
+  ]
+}

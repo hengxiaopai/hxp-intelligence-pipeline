@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "editorial-score-20260729",
+  "date": "2026-07-29",
+  "generated_at": "2026-07-29T12:00:00+08:00",
+  "weights_version": "1.0.0",
+  "scores": [
+    {
+      "candidate_id": "candidate-20260729-001",
+      "primary_category": "career_skills",
+      "novelty_kind": "new_theme",
+      "components": {
+        "authority": 98,
+        "freshness": 88,
+        "relevance": 96,
+        "evidence_quality": 98,
+        "impact": 94,
+        "novelty": 92,
+        "content_value": 98,
+        "product_value": 90,
+        "risk_penalty": 0
+      },
+      "final_score": 95,
+      "eligibility": "eligible",
+      "recommended_action": "select_new",
+      "reasons": [
+        "综合得分达到新增事实准入线",
+        "证据声明 2 条，其中直接证据 2 条"
+      ],
+      "rank": 1
+    },
+    {
+      "candidate_id": "candidate-20260729-004",
+      "primary_category": "developer_tools",
+      "novelty_kind": "new_angle",
+      "components": {
+        "authority": 99,
+        "freshness": 90,
+        "relevance": 98,
+        "evidence_quality": 99,
+        "impact": 93,
+        "novelty": 88,
+        "content_value": 96,
+        "product_value": 94,
+        "risk_penalty": 0
+      },
+      "final_score": 95,
+      "eligibility": "eligible",
+      "recommended_action": "select_new",
+      "reasons": [
+        "综合得分达到新增事实准入线",
+        "证据声明 3 条，其中直接证据 3 条"
+      ],
+      "rank": 2
+    },
+    {
+      "candidate_id": "candidate-20260729-005",
+      "primary_category": "business_strategy",
+      "novelty_kind": "new_theme",
+      "components": {
+        "authority": 99,
+        "freshness": 90,
+        "relevance": 96,
+        "evidence_quality": 99,
+        "impact": 91,
+        "novelty": 90,
+        "content_value": 94,
+        "product_value": 91,
+        "risk_penalty": 0
+      },
+      "final_score": 94,
+      "eligibility": "eligible",
+      "recommended_action": "select_new",
+      "reasons": [
+        "综合得分达到新增事实准入线",
+        "证据声明 2 条，其中直接证据 2 条"
+      ],
+      "rank": 3
+    },
+    {
+      "candidate_id": "candidate-20260729-002",
+      "primary_category": "risk_counter_signal",
+      "novelty_kind": "new_theme",
+      "components": {
+        "authority": 99,
+        "freshness": 100,
+        "relevance": 94,
+        "evidence_quality": 99,
+        "impact": 92,
+        "novelty": 95,
+        "content_value": 94,
+        "product_value": 74,
+        "risk_penalty": 5
+      },
+      "final_score": 90,
+      "eligibility": "eligible",
+      "recommended_action": "select_new",
+      "reasons": [
+        "综合得分达到新增事实准入线",
+        "风险项合计扣减 5 分",
+        "证据声明 2 条，其中直接证据 2 条"
+      ],
+      "rank": 4
+    },
+    {
+      "candidate_id": "candidate-20260729-003",
+      "primary_category": "developer_tools",
+      "novelty_kind": "new_theme",
+      "components": {
+        "authority": 99,
+        "freshness": 100,
+        "relevance": 92,
+        "evidence_quality": 99,
+        "impact": 88,
+        "novelty": 91,
+        "content_value": 91,
+        "product_value": 70,
+        "risk_penalty": 5
+      },
+      "final_score": 88,
+      "eligibility": "eligible",
+      "recommended_action": "select_new",
+      "reasons": [
+        "综合得分达到新增事实准入线",
+        "风险项合计扣减 5 分",
+        "证据声明 2 条，其中直接证据 2 条"
+      ],
+      "rank": 5
+    },
+    {
+      "candidate_id": "candidate-20260729-006",
+      "primary_category": "developer_tools",
+      "novelty_kind": "repeated",
+      "components": {
+        "authority": 99,
+        "freshness": 90,
+        "relevance": 86,
+        "evidence_quality": 99,
+        "impact": 75,
+        "novelty": 20,
+        "content_value": 70,
+        "product_value": 65,
+        "risk_penalty": 0
+      },
+      "final_score": 78,
+      "eligibility": "rejected",
+      "recommended_action": "reject_duplicate",
+      "reasons": [
+        "3 天窗口内存在同一事件",
+        "证据声明 1 条，其中直接证据 1 条"
+      ],
+      "rank": null
+    },
+    {
+      "candidate_id": "candidate-20260729-007",
+      "primary_category": "risk_counter_signal",
+      "novelty_kind": "new_angle",
+      "components": {
+        "authority": 98,
+        "freshness": 88,
+        "relevance": 82,
+        "evidence_quality": 25,
+        "impact": 80,
+        "novelty": 60,
+        "content_value": 78,
+        "product_value": 30,
+        "risk_penalty": 14
+      },
+      "final_score": 49,
+      "eligibility": "rejected",
+      "recommended_action": "reject_low_confidence",
+      "reasons": [
+        "候选事件初步置信度为低",
+        "风险项合计扣减 14 分",
+        "证据声明 1 条，其中直接证据 0 条"
+      ],
+      "rank": null
+    }
+  ]
+}
