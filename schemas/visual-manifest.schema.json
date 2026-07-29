@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/visual-manifest.schema.json",
+  "title": "HXP Visual Asset Manifest",
+  "description": "SVG与PNG海报资产、占位符、溢出和品牌检查记录。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "queue_id",
+    "generated_at",
+    "preview_only",
+    "assets",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "manifest_id": {"type": "string", "pattern": "^visual-manifest-[0-9]{8}$"},
+    "queue_id": {"type": "string", "pattern": "^visual-queue-[0-9]{8}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "preview_only": {"type": "boolean"},
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/asset"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "passed", "failed", "placeholders", "png_assets"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "placeholders": {"type": "integer", "minimum": 0},
+        "png_assets": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path", "sha256", "byte_size"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 0}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "kind",
+        "width",
+        "height",
+        "svg",
+        "png",
+        "logo_embedded",
+        "visual_embedded",
+        "placeholder_used",
+        "text_overflow",
+        "status",
+        "errors"
+      ],
+      "properties": {
+        "job_id": {"type": "string", "pattern": "^visual-job-[0-9]{8}-[0-9]{2}$"},
+        "kind": {"type": "string", "enum": ["detail_9x16", "summary_9x16"]},
+        "width": {"type": "integer", "const": 2160},
+        "height": {"type": "integer", "const": 3840},
+        "svg": {"$ref": "#/$defs/file"},
+        "png": {"$ref": "#/$defs/file"},
+        "logo_embedded": {"type": "boolean"},
+        "visual_embedded": {"type": "boolean"},
+        "placeholder_used": {"type": "boolean"},
+        "text_overflow": {"type": "boolean"},
+        "status": {"type": "string", "enum": ["passed", "failed"]},
+        "errors": {
+          "type": "array",
+          "items": {"type": "string", "maxLength": 300}
+        }
+      }
+    }
+  }
+}

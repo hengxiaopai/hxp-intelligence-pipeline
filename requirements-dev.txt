@@ -1,2 +1,4 @@
-# JSON Schema, format checks, and offline collector fixtures
+# JSON Schema, offline collectors, SVG rasterization and image verification
 jsonschema[format]>=4.23,<5
+CairoSVG>=2.7,<3
+Pillow>=11,<12

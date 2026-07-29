@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/visual-queue.schema.json",
+  "title": "HXP Visual Production Queue",
+  "description": "由已批准简报生成的详情海报与总览海报任务队列。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "queue_id",
+    "briefing_id",
+    "date",
+    "generated_at",
+    "template_version",
+    "canvas",
+    "preview_only",
+    "logo_path",
+    "asset_policy",
+    "jobs"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "queue_id": {"type": "string", "pattern": "^visual-queue-[0-9]{8}$"},
+    "briefing_id": {
+      "type": "string",
+      "pattern": "^hxp-briefing-[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "date": {"type": "string", "format": "date"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "template_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "canvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "width",
+        "height",
+        "ratio",
+        "safe_margin_x",
+        "safe_margin_top",
+        "safe_margin_bottom"
+      ],
+      "properties": {
+        "width": {"type": "integer", "const": 2160},
+        "height": {"type": "integer", "const": 3840},
+        "ratio": {"type": "string", "const": "9:16"},
+        "safe_margin_x": {"type": "integer", "minimum": 0, "maximum": 600},
+        "safe_margin_top": {"type": "integer", "minimum": 0, "maximum": 600},
+        "safe_margin_bottom": {"type": "integer", "minimum": 0, "maximum": 600}
+      }
+    },
+    "preview_only": {"type": "boolean"},
+    "logo_path": {"type": "string", "minLength": 1, "maxLength": 400},
+    "asset_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logo_required", "detail_visual_required", "allow_placeholder"],
+      "properties": {
+        "logo_required": {"type": "boolean", "const": true},
+        "detail_visual_required": {"type": "boolean", "const": true},
+        "allow_placeholder": {"type": "boolean"}
+      }
+    },
+    "jobs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/job"}
+    }
+  },
+  "$defs": {
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "order",
+        "kind",
+        "item_id",
+        "status",
+        "output_base",
+        "visual_asset_path",
+        "visual_brief",
+        "content"
+      ],
+      "properties": {
+        "job_id": {"type": "string", "pattern": "^visual-job-[0-9]{8}-[0-9]{2}$"},
+        "order": {"type": "integer", "minimum": 1},
+        "kind": {"type": "string", "enum": ["detail_9x16", "summary_9x16"]},
+        "item_id": {
+          "type": ["string", "null"],
+          "pattern": "^item-[0-9]{8}-[0-9]{2}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting_visual", "ready_to_render", "rendered", "failed"]
+        },
+        "output_base": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{4,120}$"},
+        "visual_asset_path": {"type": ["string", "null"], "maxLength": 400},
+        "visual_brief": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["concept", "must_not_fabricate"],
+          "properties": {
+            "concept": {"type": "string", "minLength": 4, "maxLength": 500},
+            "must_not_fabricate": {
+              "type": "array",
+              "items": {"type": "string", "maxLength": 160}
+            }
+          }
+        },
+        "content": {"$ref": "#/$defs/content"}
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "date_label",
+        "index_label",
+        "summary",
+        "information_label",
+        "confidence_label",
+        "why_it_matters",
+        "follow_up",
+        "conversion_label",
+        "source_labels",
+        "focus_titles",
+        "main_threads",
+        "content_opportunities",
+        "product_opportunity",
+        "risk_reminder"
+      ],
+      "properties": {
+        "eyebrow": {"type": "string", "maxLength": 60},
+        "title": {"type": "string", "minLength": 2, "maxLength": 80},
+        "subtitle": {"type": "string", "maxLength": 120},
+        "date_label": {"type": "string", "maxLength": 30},
+        "index_label": {"type": "string", "maxLength": 30},
+        "summary": {"type": "string", "maxLength": 300},
+        "information_label": {"type": "string", "maxLength": 120},
+        "confidence_label": {"type": "string", "maxLength": 120},
+        "why_it_matters": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "maxLength": 120}
+        },
+        "follow_up": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "maxLength": 120}
+        },
+        "conversion_label": {"type": "string", "maxLength": 180},
+        "source_labels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "maxLength": 80}
+        },
+        "focus_titles": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {"type": "string", "maxLength": 50}
+        },
+        "main_threads": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {"type": "string", "maxLength": 120}
+        },
+        "content_opportunities": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {"type": "string", "maxLength": 80}
+        },
+        "product_opportunity": {"type": ["string", "null"], "maxLength": 120},
+        "risk_reminder": {"type": ["string", "null"], "maxLength": 160}
+      }
+    }
+  }
+}
