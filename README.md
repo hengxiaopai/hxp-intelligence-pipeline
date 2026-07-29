@@ -2,96 +2,113 @@
 
 珩小派多元情报采集、审核、海报生成与资产归档流水线。
 
-## 项目目标
+## 项目定位
 
-将每日情报生产拆成可追溯、可重放且默认不自动发布的流程：
+把每日情报生产拆成可追溯、可重放、默认不自动发布的生产流程：
 
-1. **计划与采集**：按来源优先级、最小间隔和最大时效生成采集计划。
-2. **审核与组装**：事实核验、3/7/30 天去重、编辑评分和日报组装。
-3. **人工批准**：自动校验通过后仍保持待审核，批准后才能推进正式历史与视觉阶段。
-4. **视觉与归档**：AI 生成无文字主视觉，固定 SVG 模板排版中文、导出 PNG 并完成质检。
+```text
+来源计划与采集
+  ↓
+事实核验与结构化
+  ↓
+3 / 7 / 30 天去重
+  ↓
+编辑评分与日报组装
+  ↓
+人工批准
+  ↓
+AI 无文字主视觉
+  ↓
+人工视觉审核与定向重试
+  ↓
+固定模板中文排版
+  ↓
+多平台独立尺寸导出
+  ↓
+质检、归档与后续分发
+```
 
 ## 核心原则
 
-- 不为凑数引入低价值信息；每日合格焦点目标为 5–8 条。
+- 每日目标 5–8 条高价值情报，不为凑数加入低质量信息。
 - 连续热点只记录可证实的新增变化。
-- 政策、金融、财务、安全等内容优先使用官方或一手来源。
-- 评分、排序、入选、淘汰、历史提交和视觉资产都必须可解释、可重放。
-- 实时采集、失败 Issue、历史推进和正式发布全部默认关闭或受显式闸门约束。
-- **AI 生视觉，模板排文字**，不依赖图片模型渲染大段中文。
-- 仓库不保存或分发字体文件；正式 Logo 必须使用主理人批准的品牌资产。
+- 政策、金融、财务和安全主题优先使用官方或一手来源。
+- 评分、去重、入选、淘汰、审核、重试和导出必须可解释、可重放。
+- 实时采集、历史推进、图片生成和正式发布均受显式闸门约束。
+- **AI 生视觉，模板排文字，程序做质检，人工做最终审核。**
+- 图片模型不得生成大段中文、正式 Logo、虚构 UI、财务图表或合作关系。
+- 仓库不保存 API 密钥、Cookie、Authorization、私密原始响应或字体文件。
 
-## 当前结构
+## 当前能力
+
+### 情报与编辑
+
+- 官方来源注册表与采集策略
+- RSS / Atom 与语义化 HTML 采集
+- 原始快照与来源追溯
+- 稳定事件指纹
+- 3 / 7 / 30 天去重
+- 编辑评分与栏目平衡
+- 5–8 条日报自动组装
+- 内容机会、产品机会与风险提醒
+- 人工批准与历史提交闸门
+
+### 视觉生产
+
+- 2160×3840 固定 SVG / PNG 详情与总览模板
+- 中文显示宽度计算、自动换行和溢出阻断
+- 稳定 AI 主视觉 Prompt 与请求指纹
+- `manual_chatgpt` 人工交接
+- 图片结果 SHA-256、尺寸和 MIME 绑定
+- 人工事实、品牌、构图和裁切审核
+- 失败条目定向重试，旧尝试不覆盖
+- 最新已批准主视觉选择
+- 9:16、3:4、16:9、2.35:1 四套独立平台模板
+- SVG / PNG 文件哈希、尺寸和 Export Manifest 验证
+
+## 目录结构
 
 ```text
 hxp-intelligence-pipeline/
-├── assets/brand/
-│   └── README.md
-├── automation/
-│   └── chatgpt-daily-task.md
-├── collectors/
-│   ├── base.py
-│   ├── html_index.py
-│   ├── rss.py
-│   └── snapshot.py
+├── assets/brand/                 # 正式品牌资产接入规范
+├── automation/                   # ChatGPT 自动化任务提示词
+├── collectors/                   # RSS、HTML 与快照采集
 ├── config/
-│   ├── daily-run.json
-│   ├── editorial-weights.json
-│   ├── entity-aliases.json
-│   ├── schedule.json
 │   ├── sources.json
-│   └── visual-theme.json
+│   ├── editorial-weights.json
+│   ├── schedule.json
+│   ├── visual-theme.json
+│   ├── visual-providers.json
+│   └── export-presets.json
 ├── data/
-│   ├── daily/2026-07-29/
+│   ├── daily/YYYY-MM-DD/
 │   ├── examples/
 │   └── state/
 ├── docs/
-│   ├── DAILY-RUN.md
-│   ├── EDITORIAL-ASSEMBLY.md
 │   ├── RUNBOOK.md
+│   ├── DAILY-RUN.md
 │   ├── SCHEDULING.md
+│   ├── EDITORIAL-ASSEMBLY.md
 │   ├── VISUAL-PIPELINE.md
-│   └── VISUAL-SPEC.md
-├── pipeline/
-│   ├── briefing_assembler.py
-│   ├── dedup.py
-│   ├── editorial_scoring.py
-│   ├── failure_reporting.py
-│   ├── history_commit.py
-│   ├── normalization.py
-│   └── scheduler.py
-├── schemas/
-│   ├── briefing.schema.json
-│   ├── candidate.schema.json
-│   ├── daily-plan.schema.json
-│   ├── daily-run.schema.json
-│   ├── dedup-index.schema.json
-│   ├── failure-report.schema.json
-│   ├── visual-manifest.schema.json
-│   └── visual-queue.schema.json
-├── scripts/
-│   ├── build_visual_queue.py
-│   ├── collect.py
-│   ├── commit_daily_history.py
-│   ├── plan_daily_run.py
-│   ├── render_posters.py
-│   ├── run_daily_pipeline.py
-│   ├── validate_daily_run.py
-│   ├── validate_visual_assets.py
-│   └── write_failure_report.py
+│   ├── VISUAL-SPEC.md
+│   ├── AI-VISUALS.md
+│   └── MULTI-PLATFORM-EXPORT.md
+├── pipeline/                     # 去重、评分、组装、调度和历史提交
+├── schemas/                      # 全部数据契约
+├── scripts/                      # CLI 入口
 ├── visual/
-│   ├── layout.py
-│   ├── pipeline.py
 │   ├── queue.py
+│   ├── svg_renderer.py
 │   ├── rasterizer.py
-│   └── svg_renderer.py
-├── tests/
-│   ├── fixtures/hxp-test-logo.svg
-│   ├── fixtures/visual-placeholder.svg
-│   └── test_visual_pipeline.py
-└── .github/workflows/
-    ├── daily-pipeline.yml
-    └── schema-validation.yml
+│   ├── prompt_builder.py
+│   ├── request_queue.py
+│   ├── result_import.py
+│   ├── review.py
+│   ├── retry_policy.py
+│   ├── approved_assets.py
+│   ├── multiformat.py
+│   └── export_polish.py
+└── .github/workflows/            # 离线 CI、每日计划与视觉验证
 ```
 
 ## 快速验证
@@ -105,13 +122,17 @@ python scripts/validate_daily_run.py --run-dir data/daily/2026-07-29
 python -m unittest discover -s tests -v
 ```
 
-Linux PNG 导出还需要系统组件和 CJK 字体：
+Linux SVG → PNG 导出需要：
 
 ```bash
 sudo apt-get install -y libcairo2 libpango-1.0-0 fonts-noto-cjk
 ```
 
-## 1. 生成每日来源计划
+仓库不会提交或分发字体文件。
+
+## 每日运行
+
+### 1. 生成来源计划
 
 ```bash
 python scripts/plan_daily_run.py \
@@ -120,50 +141,18 @@ python scripts/plan_daily_run.py \
   --output /tmp/daily-plan.json
 ```
 
-默认计划不访问外网。实时采集必须显式使用 `--mode live --live-enabled`，GitHub 定时工作流还要求仓库变量 `HXP_LIVE_COLLECTION_ENABLED=true`。
+默认不访问外网。实时采集必须显式启用。
 
-## 2. 候选、去重与日报组装
+### 2. 生成待审核日报
 
 ```bash
-python scripts/normalize_candidate.py \
-  --snapshot <snapshot.json> \
-  --source <source.json> \
-  --item-index 0 \
-  --sequence 1 \
-  --entity "<entity>" \
-  --action "<action>" \
-  --object "<object>" \
-  --primary-category <category> \
-  --information-type <type> \
-  --output /tmp/candidate.json
-
-python scripts/dedup_candidate.py \
-  --candidate /tmp/candidate.json \
-  --index data/state/dedup-index.json \
-  --decision-output /tmp/decision.json \
-  --updated-index-output /tmp/index.next.json
-
 python scripts/run_daily_pipeline.py \
   --run-dir data/daily/YYYY-MM-DD \
   --mode archived_real_sources \
   --review-status pending
 ```
 
-运行包记录来源、候选、评分、简报、公开 Markdown、SHA-256、验证状态和人工审核状态。
-
-## 3. 人工批准与历史提交
-
-待审核运行禁止推进正式水位、去重历史和视觉资产：
-
-```bash
-python scripts/commit_daily_history.py \
-  --run-dir data/daily/2026-07-29 \
-  --apply
-```
-
-该命令对当前归档运行会按设计失败，因为它仍是 `review_status=pending`。
-
-审核通过后重新生成批准状态，再预览和应用历史：
+### 3. 人工批准与历史提交
 
 ```bash
 python scripts/run_daily_pipeline.py \
@@ -172,18 +161,15 @@ python scripts/run_daily_pipeline.py \
   --review-status approved
 
 python scripts/commit_daily_history.py \
-  --run-dir data/daily/YYYY-MM-DD
-
-python scripts/commit_daily_history.py \
   --run-dir data/daily/YYYY-MM-DD \
   --apply
 ```
 
-历史提交是原子的、幂等的，同一 `item_id` 不会重复进入正式索引。
+待审核或验证失败的运行不能推进正式历史。
 
-## 4. 固定模板海报
+## 视觉生产
 
-准备已批准 Logo 和按 `item_id` 命名的无文字主视觉后，创建任务队列：
+### 1. 创建固定模板队列
 
 ```bash
 python scripts/build_visual_queue.py \
@@ -193,59 +179,99 @@ python scripts/build_visual_queue.py \
   --output data/daily/YYYY-MM-DD/visual/queue.json
 ```
 
-渲染 2160×3840 SVG 与 PNG：
+### 2. 创建无文字主视觉请求
 
 ```bash
-python scripts/render_posters.py \
-  --queue data/daily/YYYY-MM-DD/visual/queue.json \
-  --output-dir data/daily/YYYY-MM-DD/visual/posters \
-  --manifest data/daily/YYYY-MM-DD/visual/manifest.json
-
-python scripts/validate_visual_assets.py \
-  --queue data/daily/YYYY-MM-DD/visual/queue.json \
-  --manifest data/daily/YYYY-MM-DD/visual/manifest.json
+python scripts/build_visual_requests.py \
+  --visual-queue data/daily/YYYY-MM-DD/visual/queue.json \
+  --provider manual_chatgpt \
+  --output data/daily/YYYY-MM-DD/visual/requests.json
 ```
 
-每条正式情报生成一张详情海报，最后生成一张按实际数量汇总的总览海报。缺少正式 Logo、主视觉、中文字体或存在文本溢出时，正式渲染硬阻断。
+将每个请求的 Prompt 交给 ChatGPT 图片生成，并按 `request_id` 保存结果。
 
-CI 使用测试 Logo 和明确标记的占位主视觉生成 **5 张详情预览 + 1 张总览预览**，Artifact 名称为 `hxp-visual-preview-2026-07-29`。这些预览不得公开发布。
+### 3. 导入、审核与定向重试
 
-## 5. 定时任务与失败告警
+```bash
+python scripts/import_visual_results.py \
+  --requests data/daily/YYYY-MM-DD/visual/requests.json \
+  --result-dir visual-results/YYYY-MM-DD \
+  --generator-reference chatgpt-manual-YYYYMMDD \
+  --output data/daily/YYYY-MM-DD/visual/requests.imported.json
 
-`.github/workflows/daily-pipeline.yml` 每天北京时间 09:00 运行。默认只生成计划并上传 Artifact，不自动提交内容、不更新历史、不生图、不发布。
+python scripts/review_visuals.py \
+  --requests data/daily/YYYY-MM-DD/visual/requests.imported.json \
+  --decisions data/daily/YYYY-MM-DD/visual/review-decisions.json \
+  --review-output data/daily/YYYY-MM-DD/visual/review.json \
+  --requests-output data/daily/YYYY-MM-DD/visual/requests.reviewed.json
 
-失败报告会清理 Authorization、Bearer、Token、API Key、密码、Cookie 和 Session。自动创建 GitHub Issue 仍需显式启用 `HXP_FAILURE_ISSUES_ENABLED=true`。
+python scripts/retry_failed_visuals.py \
+  --requests data/daily/YYYY-MM-DD/visual/requests.reviewed.json \
+  --review data/daily/YYYY-MM-DD/visual/review.json \
+  --generated-at 2026-07-29T15:10:00+08:00 \
+  --plan-output data/daily/YYYY-MM-DD/visual/retry-plan.json \
+  --requests-output data/daily/YYYY-MM-DD/visual/requests.retried.json
+```
 
-## 首份真实来源日报
+事实错误退回编辑阶段；构图、主体、文字、风格和裁切问题才进入图片重试。
 
-`data/daily/2026-07-29/` 已归档首份端到端运行：
+### 4. 多平台独立模板导出
 
-- 6 个已核对的一手官方来源；
-- 7 个候选事件；
-- 5 条今日新增事实；
-- 2 条内部淘汰候选；
-- 评分、简报、Markdown 与运行清单全部通过校验；
-- `review_status=pending`，因此 `publication_allowed=false`。
+```bash
+python scripts/export_platform_assets.py \
+  --visual-queue data/daily/YYYY-MM-DD/visual/queue.json \
+  --requests data/daily/YYYY-MM-DD/visual/requests.reviewed.json \
+  --review data/daily/YYYY-MM-DD/visual/review.json \
+  --output-dir data/daily/YYYY-MM-DD/visual/platforms \
+  --manifest data/daily/YYYY-MM-DD/visual/export-manifest.json
 
-## 文档
+python scripts/validate_platform_exports.py \
+  --manifest data/daily/YYYY-MM-DD/visual/export-manifest.json
+```
 
-- 总运行手册：[`docs/RUNBOOK.md`](docs/RUNBOOK.md)
-- 每日运行包：[`docs/DAILY-RUN.md`](docs/DAILY-RUN.md)
-- 调度与历史：[`docs/SCHEDULING.md`](docs/SCHEDULING.md)
-- 编辑评分与组装：[`docs/EDITORIAL-ASSEMBLY.md`](docs/EDITORIAL-ASSEMBLY.md)
-- 视觉生产：[`docs/VISUAL-PIPELINE.md`](docs/VISUAL-PIPELINE.md)
-- 视觉规范：[`docs/VISUAL-SPEC.md`](docs/VISUAL-SPEC.md)
+正式输出：
 
-## 当前阶段
+- `vertical_9x16`：2160×3840
+- `portrait_3x4`：2160×2880
+- `landscape_16x9`：2560×1440
+- `wechat_cover_235x1`：2350×1000
+
+每个比例使用独立布局，不直接裁切 9:16 成品。
+
+## CI
+
+当前包含：
+
+- `Schema Validation`
+- `Visual Generation Validation`
+- `Multi-platform Export Validation`
+- `HXP Daily Pipeline Plan`
+
+CI 不调用付费图片 API。视觉验证使用带测试标识的 Logo 和离线 Fixture。
+
+## 首份端到端归档
+
+`data/daily/2026-07-29/` 包含：
+
+- 6 个已核对的一手来源
+- 7 个候选事件
+- 5 条正式入选
+- 2 条内部淘汰
+- 评分、简报、Markdown 与运行清单
+
+该归档仍保持 `review_status=pending`，因此不能进入正式发布。
+
+## 项目阶段
 
 - Phase 1.1：核心数据 Schema ✅
 - Phase 1.2：六 Agent Prompt Engine ✅
 - Phase 1.3：示例、校验、CI 与自动化入口 ✅
 - Phase 2.1：官方来源注册表与候选池 ✅
 - Phase 2.2：RSS / HTML 采集与原始快照 ✅
-- Phase 2.3：稳定指纹与 3/7/30 天去重 ✅
+- Phase 2.3：稳定指纹与 3 / 7 / 30 天去重 ✅
 - Phase 3.1：编辑评分与日报组装器 ✅
 - Phase 3.2：首份真实每日运行包 ✅
-- Phase 3.3：按日调度、增量水位、历史提交与失败告警 ✅
-- Phase 4.1：固定 SVG 海报、中文排版、PNG 导出与视觉队列 🚧
-- Phase 4.2：AI 主视觉生成、批量重试与多平台尺寸 ⏳
+- Phase 3.3：调度、水位、历史提交与失败告警 ✅
+- Phase 4.1：固定 SVG / PNG 海报、中文排版与视觉队列 ✅
+- Phase 4.2：AI 主视觉、人工审核、定向重试与多平台导出 🚧
+- Phase 5：多平台内容包与人工确认后的分发连接 ⏳

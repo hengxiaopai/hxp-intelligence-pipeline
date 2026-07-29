@@ -85,6 +85,8 @@ jobs:
           scripts/build_visual_queue.py
           scripts/render_posters.py
           scripts/validate_visual_assets.py
+          scripts/build_visual_requests.py
+          scripts/import_visual_results.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
@@ -104,12 +106,16 @@ jobs:
           visual/rasterizer.py
           visual/svg_renderer.py
           visual/pipeline.py
+          visual/prompt_builder.py
+          visual/request_queue.py
+          visual/result_import.py
           tests/test_collectors.py
           tests/test_normalization_dedup.py
           tests/test_editorial_assembly.py
           tests/test_daily_run.py
           tests/test_scheduler_history.py
           tests/test_visual_pipeline.py
+          tests/test_visual_generation_flow.py
 
       - name: Validate baseline examples
         run: python scripts/validate.py --examples
@@ -224,7 +230,7 @@ jobs:
           python scripts/validate.py --schema schemas/briefing.schema.json --data /tmp/hxp-briefing.json
           grep -q "不构成投资建议" /tmp/hxp-briefing.md
 
-      - name: Exercise fixed SVG and PNG visual preview
+      - name: Exercise fixed templates and AI visual handoff
         shell: bash
         run: |
           set -euo pipefail
@@ -239,12 +245,38 @@ jobs:
           run['publication_allowed'] = True
           path.write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           PY
-          mkdir -p /tmp/hxp-visual/posters
+          mkdir -p /tmp/hxp-visual/posters /tmp/hxp-visual/results
           python scripts/build_visual_queue.py \
             --run-dir /tmp/hxp-visual-run \
             --logo tests/fixtures/hxp-test-logo.svg \
             --allow-placeholder \
             --output /tmp/hxp-visual/queue.json
+          python scripts/build_visual_requests.py \
+            --visual-queue /tmp/hxp-visual/queue.json \
+            --provider fixture \
+            --output /tmp/hxp-visual/requests.json
+          python scripts/validate.py \
+            --schema schemas/visual-request.schema.json \
+            --data /tmp/hxp-visual/requests.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          requests = json.loads(Path('/tmp/hxp-visual/requests.json').read_text(encoding='utf-8'))
+          output = Path('/tmp/hxp-visual/results')
+          for index, request in enumerate(requests['requests'], start=1):
+              image = Image.new('RGB', (1792, 1024), (235, 245, 255 - index))
+              image.save(output / f"{request['item_id']}.png", format='PNG')
+          PY
+          python scripts/import_visual_results.py \
+            --requests /tmp/hxp-visual/requests.json \
+            --result-dir /tmp/hxp-visual/results \
+            --generator-reference fixture-ci-20260729 \
+            --imported-at 2026-07-29T13:30:00+08:00 \
+            --output /tmp/hxp-visual/requests.imported.json
+          python scripts/validate.py \
+            --schema schemas/visual-request.schema.json \
+            --data /tmp/hxp-visual/requests.imported.json
           python scripts/render_posters.py \
             --queue /tmp/hxp-visual/queue.json \
             --output-dir /tmp/hxp-visual/posters \
@@ -253,6 +285,7 @@ jobs:
           python scripts/validate_visual_assets.py \
             --queue /tmp/hxp-visual/queue.json \
             --manifest /tmp/hxp-visual/manifest.json
+          test "$(find /tmp/hxp-visual/results -name '*.png' | wc -l)" -eq 5
           test "$(find /tmp/hxp-visual/posters -name '*.svg' | wc -l)" -eq 6
           test "$(find /tmp/hxp-visual/posters -name '*.png' | wc -l)" -eq 6
 

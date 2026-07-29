@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/visual-review.schema.json",
+  "title": "HXP Human Visual Review Batch",
+  "description": "记录主视觉的人工事实、品牌、构图、文字和裁切审核。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "review_batch_id",
+    "request_queue_id",
+    "reviewed_at",
+    "reviewer",
+    "reviews",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "review_batch_id": {
+      "type": "string",
+      "pattern": "^visual-review-[0-9]{8}-[a-z0-9-]{3,40}$"
+    },
+    "request_queue_id": {
+      "type": "string",
+      "pattern": "^visual-request-queue-[0-9]{8}$"
+    },
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "identifier"],
+      "properties": {
+        "type": {"type": "string", "enum": ["human", "fixture"]},
+        "identifier": {"type": "string", "minLength": 1, "maxLength": 120}
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/review"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "approved", "rejected", "needs_changes"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "approved": {"type": "integer", "minimum": 0},
+        "rejected": {"type": "integer", "minimum": 0},
+        "needs_changes": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "item_id",
+        "asset_sha256",
+        "decision",
+        "checks",
+        "rejection_reasons",
+        "change_instruction",
+        "notes"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "item_id": {
+          "type": "string",
+          "pattern": "^item-[0-9]{8}-[0-9]{2}$"
+        },
+        "asset_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "decision": {
+          "type": "string",
+          "enum": ["approved", "rejected", "needs_changes"]
+        },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fact_consistent",
+            "brief_consistent",
+            "no_text_or_gibberish",
+            "no_fabricated_ui_or_data",
+            "brand_style_consistent",
+            "subject_clear",
+            "crop_safe",
+            "not_recent_visual_duplicate"
+          ],
+          "properties": {
+            "fact_consistent": {"type": "boolean"},
+            "brief_consistent": {"type": "boolean"},
+            "no_text_or_gibberish": {"type": "boolean"},
+            "no_fabricated_ui_or_data": {"type": "boolean"},
+            "brand_style_consistent": {"type": "boolean"},
+            "subject_clear": {"type": "boolean"},
+            "crop_safe": {"type": "boolean"},
+            "not_recent_visual_duplicate": {"type": "boolean"}
+          }
+        },
+        "rejection_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "fact_mismatch",
+              "subject_mismatch",
+              "composition_problem",
+              "style_drift",
+              "contains_text",
+              "fabricated_ui",
+              "fabricated_data",
+              "logo_or_brand_misuse",
+              "unsafe_crop",
+              "low_quality",
+              "recent_visual_duplicate",
+              "other"
+            ]
+          }
+        },
+        "change_instruction": {"type": ["string", "null"], "maxLength": 600},
+        "notes": {"type": ["string", "null"], "maxLength": 600}
+      }
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/visual-retry.schema.json",
+  "title": "HXP Targeted Visual Retry Plan",
+  "description": "只为失败或被驳回的主视觉生成定向重试任务，保留父请求和差异说明；事实错误必须退回编辑阶段。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "retry_plan_id",
+    "request_queue_id",
+    "review_batch_id",
+    "generated_at",
+    "maximum_attempts",
+    "retries",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "retry_plan_id": {
+      "type": "string",
+      "pattern": "^visual-retry-[0-9]{8}-[a-z0-9-]{3,40}$"
+    },
+    "request_queue_id": {
+      "type": "string",
+      "pattern": "^visual-request-queue-[0-9]{8}$"
+    },
+    "review_batch_id": {
+      "type": "string",
+      "pattern": "^visual-review-[0-9]{8}-[a-z0-9-]{3,40}$"
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "maximum_attempts": {"type": "integer", "minimum": 1, "maximum": 5},
+    "retries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/retry"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible",
+        "scheduled",
+        "exhausted",
+        "blocked_unchanged",
+        "editorial_blocked"
+      ],
+      "properties": {
+        "eligible": {"type": "integer", "minimum": 0},
+        "scheduled": {"type": "integer", "minimum": 0},
+        "exhausted": {"type": "integer", "minimum": 0},
+        "blocked_unchanged": {"type": "integer", "minimum": 0},
+        "editorial_blocked": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "retry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "parent_request_id",
+        "next_request_id",
+        "next_attempt",
+        "retry_reason",
+        "prompt_delta",
+        "new_request_fingerprint",
+        "decision"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "pattern": "^item-[0-9]{8}-[0-9]{2}$"
+        },
+        "parent_request_id": {
+          "type": "string",
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "next_request_id": {
+          "type": ["string", "null"],
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "next_attempt": {"type": "integer", "minimum": 2, "maximum": 5},
+        "retry_reason": {
+          "type": "string",
+          "enum": [
+            "fact_mismatch",
+            "subject_mismatch",
+            "composition_problem",
+            "style_drift",
+            "contains_text",
+            "fabricated_ui",
+            "fabricated_data",
+            "logo_or_brand_misuse",
+            "unsafe_crop",
+            "low_quality",
+            "recent_visual_duplicate",
+            "generation_failure",
+            "other"
+          ]
+        },
+        "prompt_delta": {"type": "string", "minLength": 8, "maxLength": 1200},
+        "new_request_fingerprint": {
+          "type": ["string", "null"],
+          "pattern": "^vreq-[a-f0-9]{32,64}$"
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["schedule", "exhausted", "blocked_unchanged", "editorial_blocked"]
+        }
+      }
+    }
+  }
+}

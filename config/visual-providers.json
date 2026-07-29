@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "default_provider": "manual_chatgpt",
+  "maximum_attempts": 3,
+  "providers": [
+    {
+      "provider_id": "manual_chatgpt",
+      "name": "ChatGPT Image Manual Handoff",
+      "enabled": true,
+      "mode": "manual",
+      "credentials_required": false,
+      "credentials_persisted": false,
+      "supported_ratios": ["16:9", "3:2", "4:3", "1:1", "3:4", "9:16"],
+      "output_formats": ["png", "jpg", "webp"],
+      "notes": "流水线输出结构化任务包，由人工交给ChatGPT图片生成，再使用导入脚本绑定结果文件与SHA-256。"
+    },
+    {
+      "provider_id": "fixture",
+      "name": "Offline Test Fixture",
+      "enabled": true,
+      "mode": "fixture",
+      "credentials_required": false,
+      "credentials_persisted": false,
+      "supported_ratios": ["16:9", "3:2", "4:3", "1:1", "3:4", "9:16"],
+      "output_formats": ["png"],
+      "notes": "仅用于CI与离线测试，不代表正式生成结果。"
+    },
+    {
+      "provider_id": "external_api",
+      "name": "Explicit External Image API",
+      "enabled": false,
+      "mode": "api",
+      "credentials_required": true,
+      "credentials_persisted": false,
+      "credential_environment_variables": ["HXP_IMAGE_API_KEY"],
+      "supported_ratios": ["16:9", "3:2", "4:3", "1:1", "3:4", "9:16"],
+      "output_formats": ["png", "jpg", "webp"],
+      "notes": "必须显式启用。密钥只从环境变量读取，不写入仓库、日志、Manifest或失败报告。"
+    }
+  ],
+  "global_constraints": {
+    "text_allowed": false,
+    "formal_logo_allowed": false,
+    "fabricated_product_ui_allowed": false,
+    "fabricated_financial_data_allowed": false,
+    "store_raw_private_response": false,
+    "store_credentials": false
+  }
+}
