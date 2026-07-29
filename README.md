@@ -1,6 +1,6 @@
 # HXP Intelligence Pipeline
 
-珩小派多元情报采集、审核、海报生成与资产归档流水线。
+珩小派多元情报采集、审核、海报生成、内容适配与资产归档流水线。
 
 ## 项目定位
 
@@ -25,7 +25,13 @@ AI 无文字主视觉
   ↓
 多平台独立尺寸导出
   ↓
-质检、归档与后续分发
+五个平台草稿内容包
+  ↓
+发布计划与人工确认
+  ↓
+本地 HTML / Markdown 预览
+  ↓
+后续逐平台连接器
 ```
 
 ## 核心原则
@@ -33,11 +39,12 @@ AI 无文字主视觉
 - 每日目标 5–8 条高价值情报，不为凑数加入低质量信息。
 - 连续热点只记录可证实的新增变化。
 - 政策、金融、财务和安全主题优先使用官方或一手来源。
-- 评分、去重、入选、淘汰、审核、重试和导出必须可解释、可重放。
+- 评分、去重、入选、淘汰、审核、重试、导出和发布计划必须可解释、可重放。
 - 实时采集、历史推进、图片生成和正式发布均受显式闸门约束。
 - **AI 生视觉，模板排文字，程序做质检，人工做最终审核。**
 - 图片模型不得生成大段中文、正式 Logo、虚构 UI、财务图表或合作关系。
 - 仓库不保存 API 密钥、Cookie、Authorization、私密原始响应或字体文件。
+- Phase 5.1 即使人工批准，仍保持 `write_actions_enabled=false` 与 `external_write_performed=false`。
 
 ## 当前能力
 
@@ -66,6 +73,18 @@ AI 无文字主视觉
 - 9:16、3:4、16:9、2.35:1 四套独立平台模板
 - SVG / PNG 文件哈希、尺寸和 Export Manifest 验证
 
+### 内容适配与发布准备
+
+- 微信公众号、小红书、抖音图文、X 与网站五个平台内容包
+- 平台标题、摘要、正文、话题、线程、SEO 与来源规则
+- 已验证图片的文件哈希和顺序绑定
+- A 股内容风险说明闸门
+- 敏感凭据、内部淘汰池和绝对收益表达阻断
+- 稳定内容哈希与发布幂等键
+- 平台、账号占位符、文案版本和图片顺序的明确人工确认
+- 五份 HTML 与五份 Markdown 本地预览
+- 仅允许 `dry_run`，不登录、不保存凭据、不写入平台
+
 ## 目录结构
 
 ```text
@@ -79,7 +98,8 @@ hxp-intelligence-pipeline/
 │   ├── schedule.json
 │   ├── visual-theme.json
 │   ├── visual-providers.json
-│   └── export-presets.json
+│   ├── export-presets.json
+│   └── platform-profiles.json
 ├── data/
 │   ├── daily/YYYY-MM-DD/
 │   ├── examples/
@@ -92,8 +112,15 @@ hxp-intelligence-pipeline/
 │   ├── VISUAL-PIPELINE.md
 │   ├── VISUAL-SPEC.md
 │   ├── AI-VISUALS.md
-│   └── MULTI-PLATFORM-EXPORT.md
+│   ├── MULTI-PLATFORM-EXPORT.md
+│   └── PUBLISHING.md
 ├── pipeline/                     # 去重、评分、组装、调度和历史提交
+├── publishing/
+│   ├── platform_rules.py
+│   ├── package_builder.py
+│   ├── plan.py
+│   ├── approval.py
+│   └── dry_run.py
 ├── schemas/                      # 全部数据契约
 ├── scripts/                      # CLI 入口
 ├── visual/
@@ -238,6 +265,52 @@ python scripts/validate_platform_exports.py \
 
 每个比例使用独立布局，不直接裁切 9:16 成品。
 
+## 多平台内容包
+
+### 1. 生成内容包
+
+```bash
+python scripts/build_content_packages.py \
+  --run-dir data/daily/YYYY-MM-DD \
+  --export-manifest data/daily/YYYY-MM-DD/visual/export-manifest.json \
+  --output data/daily/YYYY-MM-DD/publishing/content-packages.json
+```
+
+### 2. 生成无写入发布计划
+
+```bash
+python scripts/build_publication_plan.py \
+  --packages data/daily/YYYY-MM-DD/publishing/content-packages.json \
+  --created-at 2026-07-29T16:30:00+08:00 \
+  --output data/daily/YYYY-MM-DD/publishing/publication-plan.json
+```
+
+### 3. 明确人工确认
+
+```bash
+python scripts/approve_publication_plan.py \
+  --plan data/daily/YYYY-MM-DD/publishing/publication-plan.json \
+  --decisions data/daily/YYYY-MM-DD/publishing/decisions.json \
+  --approval-output data/daily/YYYY-MM-DD/publishing/approval.json \
+  --plan-output data/daily/YYYY-MM-DD/publishing/publication-plan.approved.json
+```
+
+批准只确认平台、文案哈希、图片哈希、图片顺序和风险检查；程序写入权限仍为关闭。
+
+### 4. 生成本地预览
+
+```bash
+python scripts/preview_publication.py \
+  --packages data/daily/YYYY-MM-DD/publishing/content-packages.json \
+  --plan data/daily/YYYY-MM-DD/publishing/publication-plan.approved.json \
+  --approval data/daily/YYYY-MM-DD/publishing/approval.json \
+  --executed-at 2026-07-29T16:40:00+08:00 \
+  --output-dir data/daily/YYYY-MM-DD/publishing/preview \
+  --result data/daily/YYYY-MM-DD/publishing/result.json
+```
+
+结果固定为 `dry_run`，不会登录或写入任何平台。完整规范见 [`docs/PUBLISHING.md`](docs/PUBLISHING.md)。
+
 ## CI
 
 当前包含：
@@ -245,9 +318,10 @@ python scripts/validate_platform_exports.py \
 - `Schema Validation`
 - `Visual Generation Validation`
 - `Multi-platform Export Validation`
+- `Publication Package Validation`
 - `HXP Daily Pipeline Plan`
 
-CI 不调用付费图片 API。视觉验证使用带测试标识的 Logo 和离线 Fixture。
+CI 不调用付费图片 API，不访问真实发布平台。视觉和发布验证使用带测试标识的 Logo 与离线 Fixture。
 
 ## 首份端到端归档
 
@@ -273,5 +347,6 @@ CI 不调用付费图片 API。视觉验证使用带测试标识的 Logo 和离�
 - Phase 3.2：首份真实每日运行包 ✅
 - Phase 3.3：调度、水位、历史提交与失败告警 ✅
 - Phase 4.1：固定 SVG / PNG 海报、中文排版与视觉队列 ✅
-- Phase 4.2：AI 主视觉、人工审核、定向重试与多平台导出 🚧
-- Phase 5：多平台内容包与人工确认后的分发连接 ⏳
+- Phase 4.2：AI 主视觉、人工审核、定向重试与多平台导出 ✅
+- Phase 5.1：多平台内容包、发布计划、人工确认与本地预览 ✅
+- Phase 5.2：逐平台草稿连接器与最小权限写入 ⏳
