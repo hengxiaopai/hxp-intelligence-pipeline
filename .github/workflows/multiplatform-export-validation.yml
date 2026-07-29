@@ -1,0 +1,160 @@
+name: Multi-platform Export Validation
+
+on:
+  pull_request:
+    paths:
+      - "schemas/export-manifest.schema.json"
+      - "config/export-presets.json"
+      - "config/visual-theme.json"
+      - "visual/approved_assets.py"
+      - "visual/multiformat.py"
+      - "visual/rasterizer.py"
+      - "visual/svg_renderer.py"
+      - "scripts/export_platform_assets.py"
+      - "scripts/validate_platform_exports.py"
+      - "tests/test_multiformat_exports.py"
+      - "requirements-dev.txt"
+      - ".github/workflows/multiplatform-export-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  multiplatform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install rendering dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2 libpango-1.0-0 fonts-noto-cjk
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile multi-platform code
+        run: >-
+          python -m py_compile
+          visual/approved_assets.py
+          visual/multiformat.py
+          scripts/export_platform_assets.py
+          scripts/validate_platform_exports.py
+          tests/test_multiformat_exports.py
+
+      - name: Run multi-platform unit tests
+        run: python -m unittest tests.test_multiformat_exports -v
+
+      - name: Build approved offline fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hxp-platform-run /tmp/hxp-platform
+          cp -R data/daily/2026-07-29 /tmp/hxp-platform-run
+          mkdir -p /tmp/hxp-platform/results /tmp/hxp-platform/exports
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('/tmp/hxp-platform-run/run.json')
+          run = json.loads(path.read_text(encoding='utf-8'))
+          run['review_status'] = 'approved'
+          run['publication_allowed'] = True
+          path.write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+          python scripts/build_visual_queue.py \
+            --run-dir /tmp/hxp-platform-run \
+            --logo tests/fixtures/hxp-test-logo.svg \
+            --allow-placeholder \
+            --output /tmp/hxp-platform/queue.json
+          python scripts/build_visual_requests.py \
+            --visual-queue /tmp/hxp-platform/queue.json \
+            --provider fixture \
+            --output /tmp/hxp-platform/requests.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          requests = json.loads(Path('/tmp/hxp-platform/requests.json').read_text(encoding='utf-8'))
+          output = Path('/tmp/hxp-platform/results')
+          for index, request in enumerate(requests['requests'], start=1):
+              Image.new('RGB', (1792, 1024), (230, 243, 255 - index)).save(
+                  output / f"{request['request_id']}.png",
+                  format='PNG',
+              )
+          PY
+          python scripts/import_visual_results.py \
+            --requests /tmp/hxp-platform/requests.json \
+            --result-dir /tmp/hxp-platform/results \
+            --generator-reference fixture-multiplatform \
+            --imported-at 2026-07-29T15:00:00+08:00 \
+            --output /tmp/hxp-platform/requests.imported.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          requests = json.loads(Path('/tmp/hxp-platform/requests.imported.json').read_text(encoding='utf-8'))
+          checks = {
+              'fact_consistent': True,
+              'brief_consistent': True,
+              'no_text_or_gibberish': True,
+              'no_fabricated_ui_or_data': True,
+              'brand_style_consistent': True,
+              'subject_clear': True,
+              'crop_safe': True,
+              'not_recent_visual_duplicate': True,
+          }
+          payload = {
+              'reviewed_at': '2026-07-29T15:10:00+08:00',
+              'reviewer': {'type': 'fixture', 'identifier': 'multiplatform-ci'},
+              'decisions': [
+                  {
+                      'request_id': request['request_id'],
+                      'decision': 'approved',
+                      'checks': checks,
+                      'rejection_reasons': [],
+                      'change_instruction': None,
+                      'notes': 'offline multi-platform fixture',
+                  }
+                  for request in requests['requests']
+              ],
+          }
+          Path('/tmp/hxp-platform/decisions.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+          python scripts/review_visuals.py \
+            --requests /tmp/hxp-platform/requests.imported.json \
+            --decisions /tmp/hxp-platform/decisions.json \
+            --review-output /tmp/hxp-platform/review.json \
+            --requests-output /tmp/hxp-platform/requests.reviewed.json
+
+      - name: Export and validate 24 platform assets
+        run: |
+          python scripts/export_platform_assets.py \
+            --visual-queue /tmp/hxp-platform/queue.json \
+            --requests /tmp/hxp-platform/requests.reviewed.json \
+            --review /tmp/hxp-platform/review.json \
+            --output-dir /tmp/hxp-platform/exports \
+            --manifest /tmp/hxp-platform/export-manifest.json
+          python scripts/validate_platform_exports.py \
+            --manifest /tmp/hxp-platform/export-manifest.json
+          test "$(find /tmp/hxp-platform/exports -name '*.svg' | wc -l)" -eq 24
+          test "$(find /tmp/hxp-platform/exports -name '*.png' | wc -l)" -eq 24
+
+      - name: Upload multi-platform preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-multiplatform-preview-2026-07-29
+          path: /tmp/hxp-platform
+          if-no-files-found: error
+          retention-days: 7
