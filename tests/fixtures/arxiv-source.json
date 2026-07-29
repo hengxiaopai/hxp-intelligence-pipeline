@@ -1,0 +1,13 @@
+{
+  "source_id": "src-arxiv-auditable-agents-2607-00001",
+  "title": "Auditable Agents for Long-Horizon Workflows",
+  "url": "https://arxiv.org/abs/2607.00001",
+  "publisher": "arXiv",
+  "source_type": "paper",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-28T12:00:00Z",
+  "retrieved_at": "2026-07-29T03:30:00Z",
+  "evidence_summary": "离线 fixture 对应的论文原始页面记录，仅用于测试候选规范化流程；论文内容本身仍应标记为预印本并审查方法与外推限制。",
+  "verification_status": "verified",
+  "conflicts": []
+}
