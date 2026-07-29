@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/dedup-index.schema.json",
+  "title": "HXP Dedup History Index",
+  "description": "用于 3/7/30 天事件、主题、观点、标题与视觉概念去重的历史索引。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "updated_at", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "event_fingerprint",
+        "topic_fingerprint",
+        "viewpoint_fingerprint",
+        "title_fingerprint",
+        "visual_fingerprint",
+        "canonical_entities",
+        "event_action",
+        "event_object",
+        "primary_category",
+        "first_seen",
+        "last_seen",
+        "occurrence_dates",
+        "candidate_ids",
+        "item_ids",
+        "latest_title",
+        "latest_summary",
+        "latest_visual_concept",
+        "status"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "pattern": "^dedup-[a-f0-9]{16,64}$"
+        },
+        "event_fingerprint": {
+          "type": "string",
+          "pattern": "^evt-[a-f0-9]{16,64}$"
+        },
+        "topic_fingerprint": {
+          "type": "string",
+          "pattern": "^topic-[a-f0-9]{16,64}$"
+        },
+        "viewpoint_fingerprint": {
+          "type": "string",
+          "pattern": "^view-[a-f0-9]{16,64}$"
+        },
+        "title_fingerprint": {
+          "type": "string",
+          "pattern": "^title-[a-f0-9]{16,64}$"
+        },
+        "visual_fingerprint": {
+          "type": ["string", "null"],
+          "pattern": "^visual-[a-f0-9]{16,64}$"
+        },
+        "canonical_entities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          }
+        },
+        "event_action": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "event_object": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "primary_category": {
+          "type": "string",
+          "enum": [
+            "ai_technology",
+            "developer_tools",
+            "open_source",
+            "ai_hardware",
+            "a_share_industry",
+            "product_trend",
+            "social_content",
+            "design_brand",
+            "policy_regulation",
+            "business_strategy",
+            "consumer_ai",
+            "career_skills",
+            "risk_counter_signal"
+          ]
+        },
+        "first_seen": {
+          "type": "string",
+          "format": "date"
+        },
+        "last_seen": {
+          "type": "string",
+          "format": "date"
+        },
+        "occurrence_dates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "candidate_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^candidate-[0-9]{8}-[0-9]{3}$"
+          }
+        },
+        "item_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^item-[0-9]{8}-[0-9]{2}$"
+          }
+        },
+        "latest_title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 220
+        },
+        "latest_summary": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 800
+        },
+        "latest_visual_concept": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived"]
+        }
+      }
+    }
+  }
+}
