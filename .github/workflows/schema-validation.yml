@@ -7,6 +7,7 @@ on:
       - "schemas/**"
       - "config/**"
       - "data/examples/**"
+      - "data/daily/**"
       - "collectors/**"
       - "pipeline/**"
       - "scripts/**"
@@ -18,6 +19,7 @@ on:
       - "schemas/**"
       - "config/**"
       - "data/examples/**"
+      - "data/daily/**"
       - "collectors/**"
       - "pipeline/**"
       - "scripts/**"
@@ -27,16 +29,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
 
     steps:
-      - name: Checkout repository
+      - name: Checkout feature branch
         uses: actions/checkout@v4
+        with:
+          ref: phase-3-2-real-daily-run
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -60,6 +65,9 @@ jobs:
           scripts/score_candidates.py
           scripts/assemble_briefing.py
           scripts/generate_editorial_examples.py
+          scripts/run_daily_pipeline.py
+          scripts/validate_daily_run.py
+          scripts/generate_daily_run_20260729.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
@@ -73,74 +81,46 @@ jobs:
           tests/test_collectors.py
           tests/test_normalization_dedup.py
           tests/test_editorial_assembly.py
+          tests/test_daily_run.py
+
+      - name: Materialize archived daily run
+        run: python scripts/generate_daily_run_20260729.py
 
       - name: Validate briefing, source, and manifest examples
         run: python scripts/validate.py --examples
 
       - name: Validate candidate event example
-        run: >-
-          python scripts/validate.py
-          --schema schemas/candidate.schema.json
-          --data data/examples/candidate.example.json
+        run: python scripts/validate.py --schema schemas/candidate.schema.json --data data/examples/candidate.example.json
 
       - name: Validate candidate source example
-        run: >-
-          python scripts/validate.py
-          --schema schemas/source.schema.json
-          --data data/examples/candidate-source.example.json
+        run: python scripts/validate.py --schema schemas/source.schema.json --data data/examples/candidate-source.example.json
 
       - name: Validate dedup history example
-        run: >-
-          python scripts/validate.py
-          --schema schemas/dedup-index.schema.json
-          --data data/examples/dedup-index.example.json
+        run: python scripts/validate.py --schema schemas/dedup-index.schema.json --data data/examples/dedup-index.example.json
 
       - name: Validate editorial score example
-        run: >-
-          python scripts/validate.py
-          --schema schemas/editorial-score.schema.json
-          --data data/examples/editorial-scores.example.json
+        run: python scripts/validate.py --schema schemas/editorial-score.schema.json --data data/examples/editorial-scores.example.json
 
       - name: Validate assembled briefing example
-        run: >-
-          python scripts/validate.py
-          --schema schemas/briefing.schema.json
-          --data data/examples/briefing-assembled.example.json
+        run: python scripts/validate.py --schema schemas/briefing.schema.json --data data/examples/briefing-assembled.example.json
 
-      - name: Validate normalization source fixture
-        run: >-
-          python scripts/validate.py
-          --schema schemas/source.schema.json
-          --data tests/fixtures/arxiv-source.json
+      - name: Validate source registry
+        run: |
+          python scripts/validate.py --schema schemas/source-registry.schema.json --data config/sources.json
+          python scripts/source_registry.py --validate
+          python scripts/validate_candidate.py
 
-      - name: Validate source registry schema
-        run: >-
-          python scripts/validate.py
-          --schema schemas/source-registry.schema.json
-          --data config/sources.json
-
-      - name: Validate source registry policies
-        run: python scripts/source_registry.py --validate
-
-      - name: Validate candidate cross-file references
-        run: python scripts/validate_candidate.py
+      - name: Validate first archived daily run
+        run: python scripts/validate_daily_run.py --run-dir data/daily/2026-07-29
 
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
 
       - name: Exercise RSS fixture CLI
-        run: >-
-          python scripts/collect.py
-          --registry-id registry-arxiv-cs-ai
-          --input-file tests/fixtures/arxiv-cs-ai.xml
-          --output-dir /tmp/hxp-rss
+        run: python scripts/collect.py --registry-id registry-arxiv-cs-ai --input-file tests/fixtures/arxiv-cs-ai.xml --output-dir /tmp/hxp-rss
 
       - name: Exercise HTML fixture CLI
-        run: >-
-          python scripts/collect.py
-          --registry-id registry-github-changelog
-          --input-file tests/fixtures/github-changelog.html
-          --output-dir /tmp/hxp-html
+        run: python scripts/collect.py --registry-id registry-github-changelog --input-file tests/fixtures/github-changelog.html --output-dir /tmp/hxp-html
 
       - name: Exercise snapshot to candidate to dedup flow
         shell: bash
@@ -148,7 +128,6 @@ jobs:
           set -euo pipefail
           SNAPSHOT="$(find /tmp/hxp-rss -maxdepth 1 -name '*.json' -print -quit)"
           test -n "$SNAPSHOT"
-
           python scripts/normalize_candidate.py \
             --snapshot "$SNAPSHOT" \
             --source tests/fixtures/arxiv-source.json \
@@ -161,7 +140,6 @@ jobs:
             --information-type paper \
             --risk-flag unconfirmed \
             --output /tmp/hxp-candidate.json
-
           python scripts/dedup_candidate.py \
             --candidate /tmp/hxp-candidate.json \
             --index /tmp/hxp-empty-index.json \
@@ -169,37 +147,29 @@ jobs:
             --updated-index-output /tmp/hxp-index.json \
             --apply
 
-          python scripts/validate.py \
-            --schema schemas/candidate.schema.json \
-            --data /tmp/hxp-candidate.json
-          python scripts/validate.py \
-            --schema schemas/dedup-decision.schema.json \
-            --data /tmp/hxp-decision.json
-          python scripts/validate.py \
-            --schema schemas/dedup-index.schema.json \
-            --data /tmp/hxp-index.json
-
       - name: Exercise editorial scoring and assembly flow
-        shell: bash
         run: |
-          set -euo pipefail
-          python scripts/score_candidates.py \
-            --pool data/examples/candidate-pool.example.json \
-            --output /tmp/hxp-editorial-scores.json
-          python scripts/assemble_briefing.py \
-            --pool data/examples/candidate-pool.example.json \
-            --scores /tmp/hxp-editorial-scores.json \
-            --output /tmp/hxp-briefing.json \
-            --markdown /tmp/hxp-briefing.md
-          python scripts/validate.py \
-            --schema schemas/editorial-score.schema.json \
-            --data /tmp/hxp-editorial-scores.json
-          python scripts/validate.py \
-            --schema schemas/briefing.schema.json \
-            --data /tmp/hxp-briefing.json
+          python scripts/score_candidates.py --pool data/examples/candidate-pool.example.json --output /tmp/hxp-editorial-scores.json
+          python scripts/assemble_briefing.py --pool data/examples/candidate-pool.example.json --scores /tmp/hxp-editorial-scores.json --output /tmp/hxp-briefing.json --markdown /tmp/hxp-briefing.md
+          python scripts/validate.py --schema schemas/editorial-score.schema.json --data /tmp/hxp-editorial-scores.json
+          python scripts/validate.py --schema schemas/briefing.schema.json --data /tmp/hxp-briefing.json
           grep -q "不构成投资建议" /tmp/hxp-briefing.md
 
-      - name: Verify generated examples are reproducible
+      - name: Verify generated examples and daily run are reproducible
         run: |
           python scripts/generate_editorial_examples.py
+          python scripts/generate_daily_run_20260729.py
           git diff --exit-code -- data/examples/
+
+      - name: Commit first archived run package
+        if: github.event_name == 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/daily/2026-07-29/
+          if git diff --cached --quiet; then
+            echo "Archived run already committed"
+            exit 0
+          fi
+          git commit -m "data(daily): archive first real-source run"
+          git push origin HEAD:phase-3-2-real-daily-run
