@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "presets": [
+    {
+      "preset_id": "vertical_9x16",
+      "width": 2160,
+      "height": 3840,
+      "ratio": "9:16",
+      "platforms": ["douyin", "wechat_channels"],
+      "safe_area": {"left": 144, "right": 144, "top": 120, "bottom": 180},
+      "content_profile": "full_detail",
+      "maximum_title_lines": 2,
+      "maximum_focus_items": 8
+    },
+    {
+      "preset_id": "portrait_3x4",
+      "width": 2160,
+      "height": 2880,
+      "ratio": "3:4",
+      "platforms": ["xiaohongshu"],
+      "safe_area": {"left": 132, "right": 132, "top": 120, "bottom": 140},
+      "content_profile": "compact_detail",
+      "maximum_title_lines": 2,
+      "maximum_focus_items": 6
+    },
+    {
+      "preset_id": "landscape_16x9",
+      "width": 2560,
+      "height": 1440,
+      "ratio": "16:9",
+      "platforms": ["x", "youtube", "website"],
+      "safe_area": {"left": 160, "right": 160, "top": 100, "bottom": 100},
+      "content_profile": "headline_summary",
+      "maximum_title_lines": 2,
+      "maximum_focus_items": 4
+    },
+    {
+      "preset_id": "wechat_cover_235x1",
+      "width": 2350,
+      "height": 1000,
+      "ratio": "2.35:1",
+      "platforms": ["wechat_article"],
+      "safe_area": {"left": 150, "right": 150, "top": 90, "bottom": 90},
+      "content_profile": "cover_only",
+      "maximum_title_lines": 2,
+      "maximum_focus_items": 1
+    }
+  ],
+  "rules": {
+    "independent_layout_per_preset": true,
+    "direct_crop_from_vertical_forbidden": true,
+    "approved_visual_required": true,
+    "approved_copy_required": true,
+    "logo_required": true,
+    "source_label_required": true,
+    "exact_dimensions_required": true
+  }
+}
