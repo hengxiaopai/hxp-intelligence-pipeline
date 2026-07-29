@@ -57,6 +57,9 @@ jobs:
           scripts/collect.py
           scripts/normalize_candidate.py
           scripts/dedup_candidate.py
+          scripts/score_candidates.py
+          scripts/assemble_briefing.py
+          scripts/generate_editorial_examples.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
@@ -65,8 +68,11 @@ jobs:
           pipeline/__init__.py
           pipeline/normalization.py
           pipeline/dedup.py
+          pipeline/editorial_scoring.py
+          pipeline/briefing_assembler.py
           tests/test_collectors.py
           tests/test_normalization_dedup.py
+          tests/test_editorial_assembly.py
 
       - name: Validate briefing, source, and manifest examples
         run: python scripts/validate.py --examples
@@ -88,6 +94,18 @@ jobs:
           python scripts/validate.py
           --schema schemas/dedup-index.schema.json
           --data data/examples/dedup-index.example.json
+
+      - name: Validate editorial score example
+        run: >-
+          python scripts/validate.py
+          --schema schemas/editorial-score.schema.json
+          --data data/examples/editorial-scores.example.json
+
+      - name: Validate assembled briefing example
+        run: >-
+          python scripts/validate.py
+          --schema schemas/briefing.schema.json
+          --data data/examples/briefing-assembled.example.json
 
       - name: Validate normalization source fixture
         run: >-
@@ -160,3 +178,28 @@ jobs:
           python scripts/validate.py \
             --schema schemas/dedup-index.schema.json \
             --data /tmp/hxp-index.json
+
+      - name: Exercise editorial scoring and assembly flow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/score_candidates.py \
+            --pool data/examples/candidate-pool.example.json \
+            --output /tmp/hxp-editorial-scores.json
+          python scripts/assemble_briefing.py \
+            --pool data/examples/candidate-pool.example.json \
+            --scores /tmp/hxp-editorial-scores.json \
+            --output /tmp/hxp-briefing.json \
+            --markdown /tmp/hxp-briefing.md
+          python scripts/validate.py \
+            --schema schemas/editorial-score.schema.json \
+            --data /tmp/hxp-editorial-scores.json
+          python scripts/validate.py \
+            --schema schemas/briefing.schema.json \
+            --data /tmp/hxp-briefing.json
+          grep -q "不构成投资建议" /tmp/hxp-briefing.md
+
+      - name: Verify generated examples are reproducible
+        run: |
+          python scripts/generate_editorial_examples.py
+          git diff --exit-code -- data/examples/
