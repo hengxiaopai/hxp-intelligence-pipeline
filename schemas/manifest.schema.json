@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/manifest.schema.json",
+  "title": "HXP Asset Manifest",
+  "description": "每日情报资产归档清单，包括海报、来源、提示词和质量检查记录。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_id",
+    "briefing_id",
+    "created_at",
+    "assets",
+    "quality_summary"
+  ],
+  "properties": {
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^manifest-[0-9]{8}$"
+    },
+    "briefing_id": {
+      "type": "string",
+      "pattern": "^hxp-briefing-[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "quality_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_assets",
+        "passed",
+        "failed",
+        "retry_count"
+      ],
+      "properties": {
+        "total_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "type",
+        "filename",
+        "related_item_id",
+        "generation_prompt_version",
+        "visual_style",
+        "quality_check"
+      ],
+      "properties": {
+        "asset_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "poster_9x16",
+            "summary_poster",
+            "social_cover",
+            "hero_visual",
+            "source_screenshot"
+          ]
+        },
+        "filename": {
+          "type": "string"
+        },
+        "related_item_id": {
+          "type": "string"
+        },
+        "generation_prompt_version": {
+          "type": "string"
+        },
+        "visual_style": {
+          "type": "string",
+          "enum": [
+            "hxp_blue_white_tech",
+            "hxp_editorial",
+            "custom"
+          ]
+        },
+        "quality_check": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "logo_correct",
+            "text_verified",
+            "numbers_verified",
+            "layout_consistent",
+            "status"
+          ],
+          "properties": {
+            "logo_correct": {
+              "type": "boolean"
+            },
+            "text_verified": {
+              "type": "boolean"
+            },
+            "numbers_verified": {
+              "type": "boolean"
+            },
+            "layout_consistent": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "passed",
+                "needs_retry",
+                "failed"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
