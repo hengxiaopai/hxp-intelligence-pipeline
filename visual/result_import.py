@@ -29,11 +29,21 @@ def _relative(path: Path) -> str:
         return resolved.as_posix()
 
 
-def _find_result(result_dir: Path, item_id: str) -> Path | None:
-    for suffix in SUPPORTED_SUFFIXES:
-        candidate = result_dir / f"{item_id}{suffix}"
-        if candidate.is_file():
-            return candidate
+def _find_result(
+    result_dir: Path,
+    *,
+    request_id: str,
+    item_id: str,
+    attempt: int,
+) -> Path | None:
+    stems = [request_id]
+    if attempt == 1:
+        stems.append(item_id)
+    for stem in stems:
+        for suffix in SUPPORTED_SUFFIXES:
+            candidate = result_dir / f"{stem}{suffix}"
+            if candidate.is_file():
+                return candidate
     return None
 
 
@@ -100,9 +110,14 @@ def import_visual_results(
             requests.append(request)
             continue
 
-        path = _find_result(result_dir, str(request["item_id"]))
+        path = _find_result(
+            result_dir,
+            request_id=str(request["request_id"]),
+            item_id=str(request["item_id"]),
+            attempt=int(request["attempt"]),
+        )
         if path is None:
-            missing.append(str(request["item_id"]))
+            missing.append(str(request["request_id"]))
             requests.append(request)
             continue
 
