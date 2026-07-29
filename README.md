@@ -26,12 +26,18 @@
 hxp-intelligence-pipeline/
 ├── automation/
 │   └── chatgpt-daily-task.md
+├── collectors/
+│   ├── base.py
+│   ├── html_index.py
+│   ├── rss.py
+│   └── snapshot.py
 ├── config/
 │   └── sources.json
 ├── data/
 │   └── examples/
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── COLLECTORS.md
 │   ├── CONTENT-SPEC.md
 │   ├── PROMPT-ENGINE.md
 │   ├── RUNBOOK.md
@@ -48,12 +54,17 @@ hxp-intelligence-pipeline/
 │   ├── briefing.schema.json
 │   ├── candidate.schema.json
 │   ├── manifest.schema.json
+│   ├── raw-snapshot.schema.json
 │   ├── source-registry.schema.json
 │   └── source.schema.json
 ├── scripts/
+│   ├── collect.py
 │   ├── source_registry.py
 │   ├── validate.py
 │   └── validate_candidate.py
+├── tests/
+│   ├── fixtures/
+│   └── test_collectors.py
 ├── .github/workflows/
 │   └── schema-validation.yml
 └── requirements-dev.txt
@@ -67,12 +78,36 @@ hxp-intelligence-pipeline/
 python -m pip install -r requirements-dev.txt
 ```
 
-验证 Schema、示例数据和跨文件引用：
+验证数据规范、来源策略和候选引用：
 
 ```bash
 python scripts/validate.py --examples
 python scripts/source_registry.py --validate
 python scripts/validate_candidate.py
+```
+
+运行离线采集测试：
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+使用 RSS fixture 生成原始快照：
+
+```bash
+python scripts/collect.py \
+  --registry-id registry-arxiv-cs-ai \
+  --input-file tests/fixtures/arxiv-cs-ai.xml \
+  --output-dir /tmp/hxp-rss
+```
+
+使用 HTML fixture：
+
+```bash
+python scripts/collect.py \
+  --registry-id registry-github-changelog \
+  --input-file tests/fixtures/github-changelog.html \
+  --output-dir /tmp/hxp-html
 ```
 
 查看首批启用来源：
@@ -81,37 +116,17 @@ python scripts/validate_candidate.py
 python scripts/source_registry.py --list --active-only
 ```
 
-输出 Collector 使用的来源计划：
+详细说明：
 
-```bash
-python scripts/source_registry.py \
-  --emit-plan \
-  --active-only \
-  --max-priority 3
-```
-
-验证单个日报：
-
-```bash
-python scripts/validate.py \
-  --schema schemas/briefing.schema.json \
-  --data data/YYYY-MM-DD/briefing.json
-```
-
-详细运行说明见 [`docs/RUNBOOK.md`](docs/RUNBOOK.md)，来源策略见 [`docs/SOURCE-REGISTRY.md`](docs/SOURCE-REGISTRY.md)。
+- 运行与发布流程：[`docs/RUNBOOK.md`](docs/RUNBOOK.md)
+- 来源注册策略：[`docs/SOURCE-REGISTRY.md`](docs/SOURCE-REGISTRY.md)
+- 采集器安全边界：[`docs/COLLECTORS.md`](docs/COLLECTORS.md)
 
 ## 自动化入口
 
 [`automation/chatgpt-daily-task.md`](automation/chatgpt-daily-task.md) 提供可复制到 ChatGPT Tasks 的每日情报提示词。
 
-自动化任务只负责：
-
-- 搜索与来源核验；
-- 3/7/30 天去重；
-- 编辑与产品机会判断；
-- 输出公开简报、`briefing.json` 和来源记录。
-
-正式海报必须在结构化数据通过审核后生成。
+自动化任务负责搜索、来源核验、去重、编辑和结构化交付；正式海报必须在数据通过审核后生成。
 
 ## 当前阶段
 
@@ -119,4 +134,5 @@ python scripts/validate.py \
 - Phase 1.2：六 Agent Prompt Engine ✅
 - Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
 - Phase 2.1：官方来源注册表与候选事件池 ✅
-- Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ⏳
+- Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 🚧
+- Phase 2.3：候选规范化、稳定指纹与去重索引 ⏳
