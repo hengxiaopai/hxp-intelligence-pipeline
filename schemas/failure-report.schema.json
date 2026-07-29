@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/failure-report.schema.json",
+  "title": "HXP Pipeline Failure Report",
+  "description": "不包含凭据的结构化失败报告，用于冷却、重试和可选Issue告警。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "failure_id",
+    "occurred_at",
+    "stage",
+    "error_type",
+    "message",
+    "fingerprint",
+    "run_id",
+    "source_registry_id",
+    "retryable",
+    "next_retry_at",
+    "occurrence_count",
+    "issue_eligible",
+    "secrets_redacted"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "failure_id": {
+      "type": "string",
+      "pattern": "^failure-[a-f0-9]{16,64}$"
+    },
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "stage": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "collection",
+        "normalization",
+        "dedup",
+        "editorial_scoring",
+        "briefing_assembly",
+        "validation",
+        "history_commit",
+        "visual",
+        "publication"
+      ]
+    },
+    "error_type": {"type": "string", "minLength": 2, "maxLength": 100},
+    "message": {"type": "string", "minLength": 2, "maxLength": 1000},
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^failure-[a-f0-9]{16,64}$"
+    },
+    "run_id": {
+      "type": ["string", "null"],
+      "pattern": "^daily-run-[0-9]{8}$"
+    },
+    "source_registry_id": {
+      "type": ["string", "null"],
+      "pattern": "^registry-[a-z0-9][a-z0-9-]{4,100}$"
+    },
+    "retryable": {"type": "boolean"},
+    "next_retry_at": {"type": ["string", "null"], "format": "date-time"},
+    "occurrence_count": {"type": "integer", "minimum": 1},
+    "issue_eligible": {"type": "boolean"},
+    "secrets_redacted": {"type": "boolean", "const": true},
+    "context": {
+      "type": "object",
+      "additionalProperties": {"type": ["string", "number", "boolean", "null"]},
+      "maxProperties": 20
+    }
+  }
+}
