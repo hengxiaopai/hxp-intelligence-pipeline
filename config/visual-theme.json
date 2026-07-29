@@ -1,0 +1,78 @@
+{
+  "version": "1.0.0",
+  "brand": {
+    "name": "珩小派",
+    "english_name": "HENGXIAOPAI",
+    "series_name": "珩小派多元情报",
+    "footer": "一人公司情报雷达"
+  },
+  "canvas": {
+    "width": 2160,
+    "height": 3840,
+    "ratio": "9:16",
+    "safe_margin_x": 144,
+    "safe_margin_top": 120,
+    "safe_margin_bottom": 120
+  },
+  "colors": {
+    "background_top": "#F8FCFF",
+    "background_bottom": "#EAF5FF",
+    "primary": "#0C5BFF",
+    "secondary": "#23B7FF",
+    "accent": "#6A7CFF",
+    "text": "#10233F",
+    "muted": "#56708F",
+    "line": "#B9D7F5",
+    "card": "#FFFFFF",
+    "card_tint": "#F5FAFF",
+    "success": "#067A6F",
+    "warning": "#A86500"
+  },
+  "typography": {
+    "primary_family": "Noto Sans CJK SC",
+    "fallback_stack": "Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, PingFang SC, sans-serif",
+    "eyebrow_size": 42,
+    "title_size": 132,
+    "subtitle_size": 54,
+    "chip_size": 34,
+    "summary_size": 48,
+    "section_title_size": 42,
+    "body_size": 42,
+    "footer_size": 34,
+    "line_height_title": 158,
+    "line_height_body": 68
+  },
+  "layout": {
+    "logo": {"x": 1740, "y": 120, "width": 276, "height": 276},
+    "header": {"x": 144, "y": 142, "width": 1500, "height": 250},
+    "title": {"x": 144, "y": 430, "width": 1872, "height": 340},
+    "chips": {"x": 144, "y": 840, "width": 1872, "height": 90},
+    "visual": {"x": 144, "y": 1010, "width": 1872, "height": 1030},
+    "summary": {"x": 144, "y": 2120, "width": 1872, "height": 390},
+    "analysis_left": {"x": 144, "y": 2590, "width": 900, "height": 720},
+    "analysis_right": {"x": 1116, "y": 2590, "width": 900, "height": 720},
+    "footer": {"x": 144, "y": 3410, "width": 1872, "height": 300},
+    "summary_grid": {"x": 144, "y": 900, "width": 1872, "height": 1700}
+  },
+  "limits": {
+    "title_units_per_line": 28,
+    "title_max_lines": 2,
+    "subtitle_units_per_line": 58,
+    "subtitle_max_lines": 2,
+    "summary_units_per_line": 74,
+    "summary_max_lines": 4,
+    "bullet_units_per_line": 36,
+    "bullet_max_lines": 2,
+    "source_units_per_line": 90,
+    "source_max_lines": 2,
+    "summary_card_title_units": 32,
+    "summary_focus_max_items": 8
+  },
+  "render": {
+    "card_radius": 42,
+    "card_opacity": 0.92,
+    "shadow_opacity": 0.12,
+    "stroke_width": 2,
+    "png_scale": 1
+  }
+}
