@@ -1,0 +1,241 @@
+name: Publication Package Validation
+
+on:
+  pull_request:
+    paths:
+      - "schemas/content-package.schema.json"
+      - "schemas/publication-*.schema.json"
+      - "config/platform-profiles.json"
+      - "publishing/**"
+      - "scripts/build_content_packages.py"
+      - "scripts/build_publication_plan.py"
+      - "scripts/approve_publication_plan.py"
+      - "scripts/preview_publication.py"
+      - "tests/test_publication_packages.py"
+      - ".github/workflows/publication-package-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publishing-dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install rendering dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2 libpango-1.0-0 fonts-noto-cjk
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile publishing code
+        run: >-
+          python -m py_compile
+          publishing/__init__.py
+          publishing/platform_rules.py
+          publishing/package_builder.py
+          publishing/plan.py
+          publishing/approval.py
+          publishing/dry_run.py
+          scripts/build_content_packages.py
+          scripts/build_publication_plan.py
+          scripts/approve_publication_plan.py
+          scripts/preview_publication.py
+          tests/test_publication_packages.py
+
+      - name: Run publication package unit tests
+        run: python -m unittest tests.test_publication_packages -v
+
+      - name: Build approved offline visual fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hxp-publish-run /tmp/hxp-publish
+          cp -R data/daily/2026-07-29 /tmp/hxp-publish-run
+          mkdir -p /tmp/hxp-publish/results /tmp/hxp-publish/exports /tmp/hxp-publish/preview
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('/tmp/hxp-publish-run/run.json')
+          run = json.loads(path.read_text(encoding='utf-8'))
+          run['review_status'] = 'approved'
+          run['publication_allowed'] = True
+          path.write_text(json.dumps(run, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+          python scripts/build_visual_queue.py \
+            --run-dir /tmp/hxp-publish-run \
+            --logo tests/fixtures/hxp-test-logo.svg \
+            --allow-placeholder \
+            --output /tmp/hxp-publish/queue.json
+          python scripts/build_visual_requests.py \
+            --visual-queue /tmp/hxp-publish/queue.json \
+            --provider fixture \
+            --output /tmp/hxp-publish/requests.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          requests = json.loads(Path('/tmp/hxp-publish/requests.json').read_text(encoding='utf-8'))
+          output = Path('/tmp/hxp-publish/results')
+          for index, request in enumerate(requests['requests'], start=1):
+              Image.new('RGB', (1792, 1024), (228, 242, 250 - index)).save(
+                  output / f"{request['request_id']}.png",
+                  format='PNG',
+              )
+          PY
+          python scripts/import_visual_results.py \
+            --requests /tmp/hxp-publish/requests.json \
+            --result-dir /tmp/hxp-publish/results \
+            --generator-reference fixture-publication \
+            --imported-at 2026-07-29T16:20:00+08:00 \
+            --output /tmp/hxp-publish/requests.imported.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          requests = json.loads(Path('/tmp/hxp-publish/requests.imported.json').read_text(encoding='utf-8'))
+          checks = {
+              'fact_consistent': True,
+              'brief_consistent': True,
+              'no_text_or_gibberish': True,
+              'no_fabricated_ui_or_data': True,
+              'brand_style_consistent': True,
+              'subject_clear': True,
+              'crop_safe': True,
+              'not_recent_visual_duplicate': True,
+          }
+          payload = {
+              'reviewed_at': '2026-07-29T16:25:00+08:00',
+              'reviewer': {'type': 'fixture', 'identifier': 'publication-ci'},
+              'decisions': [
+                  {
+                      'request_id': request['request_id'],
+                      'decision': 'approved',
+                      'checks': checks,
+                      'rejection_reasons': [],
+                      'change_instruction': None,
+                      'notes': 'offline publishing fixture',
+                  }
+                  for request in requests['requests']
+              ],
+          }
+          Path('/tmp/hxp-publish/visual-decisions.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+          python scripts/review_visuals.py \
+            --requests /tmp/hxp-publish/requests.imported.json \
+            --decisions /tmp/hxp-publish/visual-decisions.json \
+            --review-output /tmp/hxp-publish/visual-review.json \
+            --requests-output /tmp/hxp-publish/requests.reviewed.json
+          python scripts/export_platform_assets.py \
+            --visual-queue /tmp/hxp-publish/queue.json \
+            --requests /tmp/hxp-publish/requests.reviewed.json \
+            --review /tmp/hxp-publish/visual-review.json \
+            --output-dir /tmp/hxp-publish/exports \
+            --manifest /tmp/hxp-publish/export-manifest.json
+          python scripts/validate_platform_exports.py \
+            --manifest /tmp/hxp-publish/export-manifest.json
+
+      - name: Build five platform content packages and plan
+        run: |
+          python scripts/build_content_packages.py \
+            --run-dir /tmp/hxp-publish-run \
+            --export-manifest /tmp/hxp-publish/export-manifest.json \
+            --output /tmp/hxp-publish/content-packages.json
+          python scripts/build_publication_plan.py \
+            --packages /tmp/hxp-publish/content-packages.json \
+            --created-at 2026-07-29T16:30:00+08:00 \
+            --output /tmp/hxp-publish/publication-plan.json
+          python scripts/validate.py \
+            --schema schemas/content-package.schema.json \
+            --data /tmp/hxp-publish/content-packages.json
+          python scripts/validate.py \
+            --schema schemas/publication-plan.schema.json \
+            --data /tmp/hxp-publish/publication-plan.json
+
+      - name: Apply explicit human approval fixture
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          plan = json.loads(Path('/tmp/hxp-publish/publication-plan.json').read_text(encoding='utf-8'))
+          payload = {
+              'approved_at': '2026-07-29T16:35:00+08:00',
+              'approver': {'type': 'human', 'identifier': 'hxp-owner-ci'},
+              'decisions': [
+                  {
+                      'entry_id': entry['entry_id'],
+                      'platform': entry['platform'],
+                      'decision': 'approved',
+                      'account_ref_confirmed': True,
+                      'content_hash_confirmed': True,
+                      'asset_hashes_confirmed': True,
+                      'asset_order_confirmed': True,
+                      'risk_reviewed': True,
+                      'action_confirmed': True,
+                      'notes': 'CI only; no platform write',
+                  }
+                  for entry in plan['entries']
+              ],
+          }
+          Path('/tmp/hxp-publish/publication-decisions.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+          python scripts/approve_publication_plan.py \
+            --plan /tmp/hxp-publish/publication-plan.json \
+            --decisions /tmp/hxp-publish/publication-decisions.json \
+            --approval-output /tmp/hxp-publish/publication-approval.json \
+            --plan-output /tmp/hxp-publish/publication-plan.approved.json
+          python scripts/validate.py \
+            --schema schemas/publication-approval.schema.json \
+            --data /tmp/hxp-publish/publication-approval.json
+
+      - name: Render five offline publication previews
+        run: |
+          python scripts/preview_publication.py \
+            --packages /tmp/hxp-publish/content-packages.json \
+            --plan /tmp/hxp-publish/publication-plan.approved.json \
+            --approval /tmp/hxp-publish/publication-approval.json \
+            --executed-at 2026-07-29T16:40:00+08:00 \
+            --output-dir /tmp/hxp-publish/preview \
+            --result /tmp/hxp-publish/publication-result.json
+          python scripts/validate.py \
+            --schema schemas/publication-result.schema.json \
+            --data /tmp/hxp-publish/publication-result.json
+          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.html' | wc -l)" -eq 5
+          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.md' | wc -l)" -eq 5
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('/tmp/hxp-publish/publication-result.json').read_text(encoding='utf-8'))
+          plan = json.loads(Path('/tmp/hxp-publish/publication-plan.approved.json').read_text(encoding='utf-8'))
+          assert result['execution_mode'] == 'dry_run'
+          assert result['external_write_performed'] is False
+          assert result['summary'] == {'total': 5, 'previewed': 5, 'blocked': 0, 'failed': 0}
+          assert plan['write_actions_enabled'] is False
+          assert all(entry['write_allowed'] is False for entry in plan['entries'])
+          PY
+
+      - name: Upload publication preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-publication-preview-2026-07-29
+          path: /tmp/hxp-publish
+          if-no-files-found: error
+          retention-days: 7
