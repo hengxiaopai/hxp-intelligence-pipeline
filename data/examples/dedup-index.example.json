@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-07-29T03:30:00Z",
+  "entries": [
+    {
+      "record_id": "dedup-ecc547d924f29708a95c6fb784a784a1",
+      "event_fingerprint": "evt-c104fed39fdaf2d9b9484efbad5c39b3",
+      "topic_fingerprint": "topic-f5404b87acaad12a4e2d965ea27f4d6d",
+      "viewpoint_fingerprint": "view-5f7a565a215fb01ba987e7470f14aaab",
+      "title_fingerprint": "title-44faa39b6c0e16dbaf3163b09ca9bfe0",
+      "visual_fingerprint": "visual-80c95348f06c71844520aaecb571309e",
+      "canonical_entities": [
+        "GitHub",
+        "Dependabot",
+        "OpenSSF malicious-packages"
+      ],
+      "event_action": "扩大告警覆盖",
+      "event_object": "跨 npm、PyPI 等生态的恶意软件包",
+      "primary_category": "developer_tools",
+      "first_seen": "2026-07-28",
+      "last_seen": "2026-07-28",
+      "occurrence_dates": ["2026-07-28"],
+      "candidate_ids": ["candidate-20260729-001"],
+      "item_ids": [],
+      "latest_title": "Dependabot 扩大恶意软件包告警覆盖",
+      "latest_summary": "GitHub Advisory Database 开始自动摄取 OpenSSF malicious-packages 项目的恶意软件通告。已启用 malware alerting 的仓库会自动获得更广的生态覆盖，无需额外配置。",
+      "latest_visual_concept": "蓝白安全控制台，展示 GitHub 仓库、恶意依赖告警与防护盾牌",
+      "status": "active"
+    }
+  ]
+}
