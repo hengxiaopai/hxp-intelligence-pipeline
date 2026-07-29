@@ -7,7 +7,7 @@
 将每日多元情报生产拆成可追溯的四阶段流程：
 
 1. **采集**：抓取并结构化记录候选信号、来源与时间。
-2. **审核**：事实核验、置信度分级、去重、标题提炼与风险检查。
+2. **审核**：事实核验、置信度分级、去重、编辑评分与日报组装。
 3. **视觉**：AI 生成无文字主视觉，固定模板完成中文排版与多尺寸导出。
 4. **质检归档**：校验文字、数字、Logo、来源和版式，保存 Markdown、JSON、图片与清单。
 
@@ -16,8 +16,8 @@
 - 不为凑数引入低价值信息；每日合格焦点目标为 5–8 条。
 - 连续热点只记录新增变化，并标记 `continuation`。
 - 政策、金融、财务、安全等内容优先使用官方或一手来源。
+- 评分、排序、选中和淘汰都必须可解释、可复现。
 - **AI 生视觉，模板排文字**，避免依赖图片模型渲染大量中文。
-- 所有产物可追溯到原始来源、审核记录、生成提示词与质检结果。
 - 未通过 Schema、事实和视觉质检的内容不得进入发布阶段。
 
 ## 当前结构
@@ -32,6 +32,7 @@ hxp-intelligence-pipeline/
 │   ├── rss.py
 │   └── snapshot.py
 ├── config/
+│   ├── editorial-weights.json
 │   ├── entity-aliases.json
 │   └── sources.json
 ├── data/
@@ -41,12 +42,15 @@ hxp-intelligence-pipeline/
 │   ├── COLLECTORS.md
 │   ├── CONTENT-SPEC.md
 │   ├── DEDUP.md
+│   ├── EDITORIAL-ASSEMBLY.md
 │   ├── PROMPT-ENGINE.md
 │   ├── RUNBOOK.md
 │   ├── SOURCE-REGISTRY.md
 │   └── VISUAL-SPEC.md
 ├── pipeline/
+│   ├── briefing_assembler.py
 │   ├── dedup.py
+│   ├── editorial_scoring.py
 │   └── normalization.py
 ├── prompts/
 │   ├── dedup-agent.md
@@ -60,20 +64,25 @@ hxp-intelligence-pipeline/
 │   ├── candidate.schema.json
 │   ├── dedup-decision.schema.json
 │   ├── dedup-index.schema.json
+│   ├── editorial-score.schema.json
 │   ├── manifest.schema.json
 │   ├── raw-snapshot.schema.json
 │   ├── source-registry.schema.json
 │   └── source.schema.json
 ├── scripts/
+│   ├── assemble_briefing.py
 │   ├── collect.py
 │   ├── dedup_candidate.py
+│   ├── generate_editorial_examples.py
 │   ├── normalize_candidate.py
+│   ├── score_candidates.py
 │   ├── source_registry.py
 │   ├── validate.py
 │   └── validate_candidate.py
 ├── tests/
 │   ├── fixtures/
 │   ├── test_collectors.py
+│   ├── test_editorial_assembly.py
 │   └── test_normalization_dedup.py
 ├── .github/workflows/
 │   └── schema-validation.yml
@@ -82,23 +91,13 @@ hxp-intelligence-pipeline/
 
 ## 快速开始
 
-安装依赖：
+安装依赖并运行全部离线测试：
 
 ```bash
 python -m pip install -r requirements-dev.txt
-```
-
-验证数据规范、来源策略和候选引用：
-
-```bash
 python scripts/validate.py --examples
 python scripts/source_registry.py --validate
 python scripts/validate_candidate.py
-```
-
-运行全部离线测试：
-
-```bash
 python -m unittest discover -s tests -v
 ```
 
@@ -141,12 +140,29 @@ python scripts/dedup_candidate.py \
   --apply
 ```
 
-详细说明：
+### 4. 编辑评分与日报组装
+
+```bash
+python scripts/score_candidates.py \
+  --pool data/examples/candidate-pool.example.json \
+  --output /tmp/editorial-scores.json
+
+python scripts/assemble_briefing.py \
+  --pool data/examples/candidate-pool.example.json \
+  --scores /tmp/editorial-scores.json \
+  --output /tmp/briefing.json \
+  --markdown /tmp/briefing.md
+```
+
+组装器会执行确定性评分、栏目软平衡、5–8 条数量门槛、60% 新主题或新角度检查、延续跟踪限制、产品机会门槛和内部淘汰池记录。
+
+## 文档
 
 - 运行与发布流程：[`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 - 来源注册策略：[`docs/SOURCE-REGISTRY.md`](docs/SOURCE-REGISTRY.md)
 - 采集器安全边界：[`docs/COLLECTORS.md`](docs/COLLECTORS.md)
 - 规范化与去重规则：[`docs/DEDUP.md`](docs/DEDUP.md)
+- 编辑评分与日报组装：[`docs/EDITORIAL-ASSEMBLY.md`](docs/EDITORIAL-ASSEMBLY.md)
 
 ## 自动化入口
 
@@ -162,4 +178,5 @@ python scripts/dedup_candidate.py \
 - Phase 2.1：官方来源注册表与候选事件池 ✅
 - Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ✅
 - Phase 2.3：候选规范化、稳定指纹与去重索引 ✅
-- Phase 3：编辑评分、日报组装与真实候选池运行 ⏳
+- Phase 3.1：编辑评分与日报组装器 🚧
+- Phase 3.2：真实每日候选池与首份端到端日报 ⏳
