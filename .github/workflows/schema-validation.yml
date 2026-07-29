@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "schemas/**"
+      - "config/**"
       - "data/examples/**"
       - "scripts/**"
       - "requirements-dev.txt"
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - "schemas/**"
+      - "config/**"
       - "data/examples/**"
       - "scripts/**"
       - "requirements-dev.txt"
@@ -40,8 +42,23 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
 
-      - name: Compile validator
-        run: python -m py_compile scripts/validate.py
+      - name: Compile validation scripts
+        run: python -m py_compile scripts/validate.py scripts/source_registry.py
 
-      - name: Validate schemas, examples, and references
+      - name: Validate briefing, source, and manifest examples
         run: python scripts/validate.py --examples
+
+      - name: Validate candidate event example
+        run: >-
+          python scripts/validate.py
+          --schema schemas/candidate.schema.json
+          --data data/examples/candidate.example.json
+
+      - name: Validate source registry schema
+        run: >-
+          python scripts/validate.py
+          --schema schemas/source-registry.schema.json
+          --data config/sources.json
+
+      - name: Validate source registry policies
+        run: python scripts/source_registry.py --validate
