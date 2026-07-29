@@ -85,7 +85,7 @@ class DailyRunTests(unittest.TestCase):
         self.assertNotIn("内部淘汰池", markdown)
         self.assertNotIn("rejected_candidates", markdown)
         self.assertNotIn("candidate-20260729", markdown)
-        self.assertIn("任务跨界不等于职业已经被替代", markdown)
+        self.assertIn("不等于专业岗位已经被替代", markdown)
 
 
 if __name__ == "__main__":
