@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/source.schema.json",
+  "title": "HXP Intelligence Source",
+  "description": "珩小派情报来源可信度与证据记录规范。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "title",
+    "url",
+    "publisher",
+    "source_type",
+    "authority_level",
+    "published_at",
+    "retrieved_at",
+    "evidence_summary",
+    "verification_status"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "pattern": "^src-[a-z0-9][a-z0-9-]{5,80}$"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "publisher": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "official",
+        "paper",
+        "financial_filing",
+        "github",
+        "media",
+        "social_media",
+        "community",
+        "analyst"
+      ]
+    },
+    "authority_level": {
+      "type": "string",
+      "enum": [
+        "tier_1_official",
+        "tier_2_reliable_media",
+        "tier_3_signal_only"
+      ]
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_summary": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "cross_checked",
+        "single_source",
+        "unverified"
+      ]
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      }
+    }
+  }
+}
