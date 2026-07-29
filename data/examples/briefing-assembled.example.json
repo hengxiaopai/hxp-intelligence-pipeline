@@ -1,0 +1,484 @@
+{
+  "schema_version": "1.0.0",
+  "briefing_id": "hxp-briefing-2026-07-29",
+  "date": "2026-07-29",
+  "timezone": "Asia/Shanghai",
+  "generated_at": "2026-07-29T09:00:00+08:00",
+  "language": "zh-CN",
+  "title": "珩小派多元情报简报｜2026.07.29",
+  "editorial_policy": {
+    "target_min_items": 5,
+    "target_max_items": 8,
+    "actual_new_item_count": 5,
+    "shortfall_reason": null,
+    "new_or_new_angle_ratio": 1.0,
+    "dedup_windows_days": [
+      3,
+      7,
+      30
+    ],
+    "source_requirements_met": true,
+    "market_session": "post_market"
+  },
+  "new_items": [
+    {
+      "item_id": "item-20260729-01",
+      "event_fingerprint": "evt-f5a69bad7faf7aa1",
+      "status": "new",
+      "title": "模型竞争转向任务成本",
+      "subtitle": "旗舰能力之外，企业开始核算每项任务",
+      "summary": "旗舰模型发布后的新增信号，是企业开始按任务难度、质量和预算配置不同模型，而不是把所有工作交给同一个旗舰模型。",
+      "primary_category": "ai_technology",
+      "information_types": [
+        "official_release"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 98,
+        "rationale": "来源权威度 98，证据质量 98，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 96,
+      "novelty_score": 90,
+      "why_it_matters": [
+        "模型选择开始进入企业预算与工作流治理",
+        "多模型路由比单一聊天入口更具长期价值",
+        "一人公司也需要可解释的AI成本账本"
+      ],
+      "follow_up": [
+        "不同任务的真实单位成本",
+        "模型路由是否进入企业控制台",
+        "缓存、长上下文与Agent任务计费"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "product_prototype",
+        "deep_report"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-openai-model-routing-20260729"
+      ],
+      "primary_source_id": "src-openai-model-routing-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "同时具备官方信号、企业成本价值和明确产品化方向。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "三层模型路由塔连接任务、质量、成本与预算仪表盘",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构产品界面、合作关系或统计数字"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-02",
+      "event_fingerprint": "evt-8c207f624b68be71",
+      "status": "new",
+      "title": "Copilot进入预算治理",
+      "subtitle": "AI Coding成为可核算的企业资源",
+      "summary": "GitHub把AI额度分配推进到成本中心，说明AI Coding正在从个人订阅工具变成按部门、项目和预算管理的企业资源。",
+      "primary_category": "developer_tools",
+      "information_types": [
+        "github_update"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 96,
+        "rationale": "来源权威度 96，证据质量 96，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 93,
+      "novelty_score": 86,
+      "why_it_matters": [
+        "AI Coding支出开始按部门和项目核算",
+        "模型成本治理进入真实管理流程",
+        "任务级成本归因会成为下一层需求"
+      ],
+      "follow_up": [
+        "是否支持按模型与仓库统计",
+        "预算耗尽后的回退策略",
+        "中小团队能否获得同类能力"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "poster",
+        "product_prototype"
+      ],
+      "audiences": [
+        "developers",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-github-copilot-budget-20260729"
+      ],
+      "primary_source_id": "src-github-copilot-budget-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "官方更新直接支持结论，且与珩小派成本控制台方向高度相关。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "企业成本中心仪表盘连接代码仓库、AI额度和预算池",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构产品界面、合作关系或统计数字"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-03",
+      "event_fingerprint": "evt-812af0cd43ea658d",
+      "status": "new",
+      "title": "Agent手机跨应用执行",
+      "subtitle": "手机AI的分水岭从回答变成代操作",
+      "summary": "手机Agent开始连接地图、外卖、旅行和支付服务，意味着手机厂商可能重新掌握应用分发、授权与服务入口。",
+      "primary_category": "consumer_ai",
+      "information_types": [
+        "product_launch"
+      ],
+      "confidence": {
+        "level": "medium_high",
+        "score": 88,
+        "rationale": "来源权威度 88，证据质量 88，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 90,
+      "novelty_score": 88,
+      "why_it_matters": [
+        "系统级Agent可能重构超级App入口",
+        "跨应用授权与支付确认成为关键能力",
+        "旧设备升级策略会影响普及速度"
+      ],
+      "follow_up": [
+        "量产机型与真实成功率",
+        "逐次授权和支付确认机制",
+        "第三方App是否开放调用接口"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "short_video",
+        "poster"
+      ],
+      "audiences": [
+        "general_public",
+        "founders",
+        "developers"
+      ],
+      "source_ids": [
+        "src-waic-agent-phone-20260729"
+      ],
+      "primary_source_id": "src-waic-agent-phone-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "消费端影响广、内容传播性强，并具有系统入口层面的长期价值。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "手机中心连接地图、外卖、旅行和支付卡片，突出权限确认链路",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构产品界面、合作关系或统计数字"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-04",
+      "event_fingerprint": "evt-5afbac2d1e21d3c1",
+      "status": "new",
+      "title": "材料端进入业绩验证",
+      "subtitle": "AI服务器上游开始出现具体经营信号",
+      "summary": "相比泛泛讨论AI硬件主线，正式公告中的收入、客户认证和毛利率变化更能判断需求是否真正传导至材料环节。",
+      "primary_category": "a_share_industry",
+      "information_types": [
+        "earnings_guidance",
+        "company_announcement"
+      ],
+      "confidence": {
+        "level": "high",
+        "score": 98,
+        "rationale": "来源权威度 99，证据质量 97，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 83,
+      "novelty_score": 84,
+      "why_it_matters": [
+        "产业链研究从概念映射进入数据验证",
+        "材料端收入能反映需求传导深度",
+        "公告数据有助于淘汰缺少经营支撑的题材"
+      ],
+      "follow_up": [
+        "正式财报与审计结果",
+        "客户认证和量产节奏",
+        "收入增长是否具备连续性"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "industry_observation",
+        "database_update"
+      ],
+      "audiences": [
+        "investors",
+        "enterprise_users",
+        "founders"
+      ],
+      "source_ids": [
+        "src-cninfo-material-guidance-20260729"
+      ],
+      "primary_source_id": "src-cninfo-material-guidance-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "一手公告提供具体经营信号，但必须保留未经审计和非投资建议提示。",
+      "risk_flags": [
+        "financial_not_audited",
+        "investment_advice_risk"
+      ],
+      "visual_brief": {
+        "concept": "晶圆、PCB材料、服务器主板与经营数据卡片组成产业传导图",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得把业绩预告写成正式财报",
+          "不得出现买入、目标价或保证收益"
+        ]
+      }
+    },
+    {
+      "item_id": "item-20260729-05",
+      "event_fingerprint": "evt-341df1172d2d6216",
+      "status": "new",
+      "title": "AI员工进入具体岗位",
+      "subtitle": "聊天框正在让位于真实业务执行",
+      "summary": "海外新品开始直接承担销售预热、质量检查、客户成功和项目运营任务，Agent产品价值从生成内容转向完成岗位工作。",
+      "primary_category": "product_trend",
+      "information_types": [
+        "product_launch"
+      ],
+      "confidence": {
+        "level": "medium_high",
+        "score": 79,
+        "rationale": "来源权威度 78，证据质量 80，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 79,
+      "novelty_score": 91,
+      "why_it_matters": [
+        "岗位型工作流比通用助手更容易形成付费",
+        "真实工具权限和回滚成为产品壁垒",
+        "海外产品存在中文本土化与二开机会"
+      ],
+      "follow_up": [
+        "一周留存和真实付费",
+        "错误执行与人工接管机制",
+        "国内平台权限与合规边界"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "douyin_carousel",
+        "product_prototype"
+      ],
+      "audiences": [
+        "founders",
+        "developers",
+        "creators"
+      ],
+      "source_ids": [
+        "src-producthunt-ai-workers-20260729"
+      ],
+      "primary_source_id": "src-producthunt-ai-workers-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "属于中等权威产品信号，但产品结构变化和创业启发明确。",
+      "risk_flags": [
+        "unconfirmed"
+      ],
+      "visual_brief": {
+        "concept": "销售、QA、客户成功、运营四个AI岗位卡片连接同一执行中枢",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构产品界面、合作关系或统计数字"
+        ]
+      }
+    }
+  ],
+  "continuation_items": [
+    {
+      "item_id": "item-20260729-06",
+      "event_fingerprint": "evt-13434e2d66211020",
+      "status": "continuation",
+      "title": "AI成本治理进入任务级",
+      "subtitle": "今天新增的是成本与质量开始统一归因",
+      "summary": "连续热点的新变化不是再次讨论模型价格，而是企业开始把任务结果、返工率、模型费用和部门预算放到同一套评估框架中。",
+      "primary_category": "business_strategy",
+      "information_types": [
+        "research_report"
+      ],
+      "confidence": {
+        "level": "medium_high",
+        "score": 77,
+        "rationale": "来源权威度 76，证据质量 78，共记录 1 条证据声明。",
+        "evidence_count": 1
+      },
+      "importance_score": 82,
+      "novelty_score": 72,
+      "why_it_matters": [
+        "预算治理开始连接任务质量而非只看Token",
+        "成本账本可升级为团队AI运营系统",
+        "统一归因有利于多模型自动路由"
+      ],
+      "follow_up": [
+        "是否出现公开企业案例",
+        "质量评分如何避免主观化",
+        "权限和成本能否进入同一控制台"
+      ],
+      "conversion_directions": [
+        "wechat_article",
+        "product_prototype",
+        "deep_report"
+      ],
+      "audiences": [
+        "enterprise_users",
+        "founders",
+        "developers"
+      ],
+      "source_ids": [
+        "src-enterprise-ai-cost-delta-20260729"
+      ],
+      "primary_source_id": "src-enterprise-ai-cost-delta-20260729",
+      "first_seen": "2026-07-29T08:30:00+08:00",
+      "last_updated": "2026-07-29T09:00:00+08:00",
+      "selected_reason": "属于既有主线的实质新增角度，适合延续跟踪而非重复列为新增事实。",
+      "risk_flags": [
+        "none"
+      ],
+      "visual_brief": {
+        "concept": "任务、模型、质量、返工率与部门预算汇入统一控制台",
+        "visual_type": "self_made_infographic",
+        "must_not_fabricate": [
+          "不得虚构产品界面、合作关系或统计数字"
+        ]
+      },
+      "continuation": {
+        "previous_item_ids": [
+          "item-20260728-02"
+        ],
+        "new_delta": "企业评估开始从单纯Token成本扩展到任务质量、返工率和部门预算的统一归因。",
+        "background_repeated": false
+      }
+    }
+  ],
+  "content_opportunities": [
+    {
+      "opportunity_id": "content-20260729-01",
+      "wechat_title": "企业开始给每一项AI任务算账",
+      "douyin_title": "用错模型，AI成本可能差几倍",
+      "angle": "以任务成本、质量和预算为主线，解释多模型路由为何从技术选项变成企业治理能力。",
+      "visual_direction": "三层模型路由塔连接任务类型、质量评分和预算仪表盘。",
+      "related_item_ids": [
+        "item-20260729-01",
+        "item-20260729-02"
+      ]
+    },
+    {
+      "opportunity_id": "content-20260729-02",
+      "wechat_title": "AI员工开始进入具体岗位",
+      "douyin_title": "聊天框正在让位给AI员工",
+      "angle": "拆解销售、QA、客户成功和运营四类岗位型Agent，强调执行权限、回滚和付费逻辑。",
+      "visual_direction": "四个岗位卡片连接统一Agent执行中枢，展示任务状态和人工接管。",
+      "related_item_ids": [
+        "item-20260729-05"
+      ]
+    },
+    {
+      "opportunity_id": "content-20260729-03",
+      "wechat_title": "AI硬件研究进入公告验货期",
+      "douyin_title": "别再只讲概念，看材料端真实收入",
+      "angle": "从公告、客户认证、收入和毛利率出发，说明AI服务器需求如何传导到材料端。",
+      "visual_direction": "AI服务器到PCB与材料的产业传导图，叠加公告数据卡片。",
+      "related_item_ids": [
+        "item-20260729-04"
+      ]
+    }
+  ],
+  "product_opportunity": {
+    "title": "多模型任务成本与权限控制台",
+    "verdict": "build",
+    "score": 96,
+    "target_users": [
+      "独立开发者",
+      "一人公司",
+      "使用多种AI工具的小团队"
+    ],
+    "pain_point": "用户无法统一回答不同模型和Agent花了多少钱、完成了什么任务、使用了哪些权限以及结果是否值得。",
+    "mvp": [
+      "导入API或工具账单",
+      "按任务记录模型、费用、耗时与评分",
+      "设置项目月度预算",
+      "生成每周成本与质量报告"
+    ],
+    "seven_day_feasibility": true,
+    "payment_signal": "medium",
+    "competition_level": "medium",
+    "hxp_advantage": "珩小派同时积累模型选型、Codex工作流和一人公司真实使用场景，可先从自身高频需求验证。",
+    "evidence_item_ids": [
+      "item-20260729-01",
+      "item-20260729-02",
+      "item-20260729-05"
+    ]
+  },
+  "risk_reminder": {
+    "title": "不要把单一社媒传闻写成模型全面免费",
+    "risk_type": "unconfirmed_claim",
+    "description": "目前只有单一社媒线索，缺少官方定价页、公告或独立来源。正式内容应标记待确认，并避免使用已经全面免费等确定性表达。",
+    "safe_wording": [
+      "据单一社媒账号称，仍待官方确认",
+      "目前未发现官方定价文件支持该说法"
+    ]
+  },
+  "weekly_threads": {
+    "keywords": [
+      "多模型路由",
+      "AI预算治理",
+      "Agent手机",
+      "岗位型Agent",
+      "材料端验证"
+    ],
+    "strongest_trend": "AI竞争正在从模型能力扩展到任务成本、执行权限、系统入口和产业链经营数据的统一验证。",
+    "deep_dive_topic": "从聊天框到执行系统：AI产品的成本、权限与质量三层控制",
+    "productization_opportunity": "面向一人公司和小团队的多模型成本账单、权限审计与任务质量控制台。"
+  },
+  "rejected_candidates": [
+    {
+      "candidate_id": "candidate-20260729-007",
+      "title": "Copilot将AI额度纳入成本中心",
+      "rejection_reason": "duplicate_event",
+      "note": "3 天窗口内存在同一事件；风险项合计扣减 8 分；证据声明 1 条，其中直接证据 1 条"
+    },
+    {
+      "candidate_id": "candidate-20260729-008",
+      "title": "社媒传闻某模型即将全面免费",
+      "rejection_reason": "low_confidence",
+      "note": "候选事件初步置信度为低；风险项合计扣减 22 分；证据声明 1 条，其中直接证据 0 条"
+    }
+  ],
+  "source_index": [
+    "src-cninfo-material-guidance-20260729",
+    "src-enterprise-ai-cost-delta-20260729",
+    "src-github-copilot-budget-20260729",
+    "src-openai-model-routing-20260729",
+    "src-producthunt-ai-workers-20260729",
+    "src-waic-agent-phone-20260729"
+  ]
+}
