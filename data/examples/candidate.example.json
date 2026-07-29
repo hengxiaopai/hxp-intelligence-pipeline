@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_id": "candidate-20260729-001",
+  "observed_at": "2026-07-29T03:10:00Z",
+  "title_raw": "Dependabot alerts on malicious packages across more ecosystems",
+  "title_normalized": "Dependabot 扩大恶意软件包告警覆盖",
+  "canonical_entities": [
+    "GitHub",
+    "Dependabot",
+    "OpenSSF malicious-packages"
+  ],
+  "event_action": "扩大告警覆盖",
+  "event_object": "跨 npm、PyPI 等生态的恶意软件包",
+  "event_date": "2026-07-28",
+  "primary_category": "developer_tools",
+  "information_types": ["github_update", "security_incident"],
+  "summary_raw": "GitHub Advisory Database 开始自动摄取 OpenSSF malicious-packages 项目的恶意软件通告。已启用 malware alerting 的仓库会自动获得更广的生态覆盖，无需额外配置。",
+  "source_ids": ["src-github-dependabot-malware-20260728"],
+  "source_urls": [
+    "https://github.blog/changelog/2026-07-28-dependabot-alerts-on-malicious-packages-across-more-ecosystems/"
+  ],
+  "evidence_claims": [
+    {
+      "claim": "GitHub Advisory Database 已接入 OpenSSF malicious-packages 数据",
+      "source_id": "src-github-dependabot-malware-20260728",
+      "support_level": "direct",
+      "evidence_text": "官方 Changelog 明确说明 GitHub Advisory Database 现在会摄取 OpenSSF malicious-packages 项目的恶意软件通告。"
+    },
+    {
+      "claim": "已启用恶意软件告警的用户无需额外配置即可获得扩展覆盖",
+      "source_id": "src-github-dependabot-malware-20260728",
+      "support_level": "direct",
+      "evidence_text": "官方页面说明现有 malware alerting 用户会自动受益，新通告发布时将生成告警。"
+    }
+  ],
+  "authority_score": 98,
+  "freshness_score": 100,
+  "relevance_score": 88,
+  "preliminary_confidence": "high",
+  "event_fingerprint": "evt-3a8f0d7e21b6c904",
+  "dedup_keys": {
+    "entities": ["GitHub", "Dependabot", "OpenSSF malicious-packages"],
+    "action": "扩大告警覆盖",
+    "object": "恶意软件包生态覆盖",
+    "date_bucket": "2026-07-28"
+  },
+  "risk_flags": ["none"],
+  "ingestion": {
+    "source_registry_id": "registry-github-changelog",
+    "collection_method": "html_index",
+    "retrieved_at": "2026-07-29T03:10:00Z",
+    "content_hash": "sha256:2f83c91e96cbf8a0d47d813f825c628195afed7d6a09f628fcf312305873a071",
+    "parser_version": "collector-html-v0.1.0",
+    "raw_snapshot_path": "data/raw/2026-07-29/github-changelog/dependabot-malware.json"
+  },
+  "status": "pending_review",
+  "rejection_reason": null
+}
