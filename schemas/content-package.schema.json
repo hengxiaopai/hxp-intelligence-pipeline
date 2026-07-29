@@ -90,7 +90,7 @@
         "risk_disclaimer"
       ],
       "properties": {
-        "title": {"type": "string", "minLength": 2, "maxLength": 100},
+        "title": {"type": "string", "maxLength": 100},
         "summary": {"type": "string", "maxLength": 300},
         "body_markdown": {"type": "string", "maxLength": 30000},
         "caption": {"type": "string", "maxLength": 5000},
