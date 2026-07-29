@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hengxiaopai.com/schemas/export-manifest.schema.json",
   "title": "HXP Multi-platform Export Manifest",
-  "description": "记录审核通过的内容和主视觉在各平台比例下的模板导出结果。",
+  "description": "记录审核通过的内容和主视觉在各平台比例下的模板导出结果。详情图必须绑定人工批准的主视觉；总览图不需要AI主视觉。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -18,26 +18,13 @@
   ],
   "properties": {
     "schema_version": {"type": "string", "const": "1.0.0"},
-    "export_manifest_id": {
-      "type": "string",
-      "pattern": "^export-manifest-[0-9]{8}$"
-    },
-    "visual_manifest_id": {
-      "type": "string",
-      "pattern": "^visual-manifest-[0-9]{8}$"
-    },
-    "review_batch_id": {
-      "type": "string",
-      "pattern": "^visual-review-[0-9]{8}-[a-z0-9-]{3,40}$"
-    },
+    "export_manifest_id": {"type": "string", "pattern": "^export-manifest-[0-9]{8}$"},
+    "visual_manifest_id": {"type": "string", "pattern": "^visual-manifest-[0-9]{8}$"},
+    "review_batch_id": {"type": "string", "pattern": "^visual-review-[0-9]{8}-[a-z0-9-]{3,40}$"},
     "date": {"type": "string", "format": "date"},
     "generated_at": {"type": "string", "format": "date-time"},
     "template_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "exports": {
-      "type": "array",
-      "minItems": 1,
-      "items": {"$ref": "#/$defs/export"}
-    },
+    "exports": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/export"}},
     "summary": {
       "type": "object",
       "additionalProperties": false,
@@ -46,10 +33,7 @@
         "total": {"type": "integer", "minimum": 0},
         "passed": {"type": "integer", "minimum": 0},
         "failed": {"type": "integer", "minimum": 0},
-        "preset_counts": {
-          "type": "object",
-          "additionalProperties": {"type": "integer", "minimum": 0}
-        }
+        "preset_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
       }
     }
   },
@@ -76,6 +60,7 @@
         "height",
         "ratio",
         "platforms",
+        "source_request_id",
         "source_asset_sha256",
         "review_decision",
         "svg",
@@ -86,26 +71,12 @@
         "errors"
       ],
       "properties": {
-        "export_id": {
-          "type": "string",
-          "pattern": "^export-[0-9]{8}-[0-9]{2}-[a-z0-9-]{3,40}$"
-        },
-        "job_id": {
-          "type": "string",
-          "pattern": "^visual-job-[0-9]{8}-[0-9]{2}$"
-        },
-        "item_id": {
-          "type": ["string", "null"],
-          "pattern": "^item-[0-9]{8}-[0-9]{2}$"
-        },
+        "export_id": {"type": "string", "pattern": "^export-[0-9]{8}-[0-9]{2}-[a-z0-9-]{3,40}$"},
+        "job_id": {"type": "string", "pattern": "^visual-job-[0-9]{8}-[0-9]{2}$"},
+        "item_id": {"type": ["string", "null"], "pattern": "^item-[0-9]{8}-[0-9]{2}$"},
         "preset": {
           "type": "string",
-          "enum": [
-            "vertical_9x16",
-            "portrait_3x4",
-            "landscape_16x9",
-            "wechat_cover_235x1"
-          ]
+          "enum": ["vertical_9x16", "portrait_3x4", "landscape_16x9", "wechat_cover_235x1"]
         },
         "width": {"type": "integer", "minimum": 1000, "maximum": 8192},
         "height": {"type": "integer", "minimum": 500, "maximum": 8192},
@@ -119,18 +90,41 @@
             "enum": ["douyin", "wechat_channels", "xiaohongshu", "x", "youtube", "website", "wechat_article"]
           }
         },
-        "source_asset_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-        "review_decision": {"type": "string", "const": "approved"},
+        "source_request_id": {
+          "type": ["string", "null"],
+          "pattern": "^visual-request-[0-9]{8}-[0-9]{2}-a[0-9]+$"
+        },
+        "source_asset_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "review_decision": {"type": "string", "enum": ["approved", "not_applicable"]},
         "svg": {"$ref": "#/$defs/file"},
         "png": {"$ref": "#/$defs/file"},
         "text_overflow": {"type": "boolean"},
         "crop_safe": {"type": "boolean"},
         "status": {"type": "string", "enum": ["passed", "failed"]},
-        "errors": {
-          "type": "array",
-          "items": {"type": "string", "maxLength": 300}
+        "errors": {"type": "array", "items": {"type": "string", "maxLength": 300}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"item_id": {"type": "string"}}, "required": ["item_id"]},
+          "then": {
+            "properties": {
+              "source_request_id": {"type": "string"},
+              "source_asset_sha256": {"type": "string"},
+              "review_decision": {"const": "approved"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"item_id": {"type": "null"}}, "required": ["item_id"]},
+          "then": {
+            "properties": {
+              "source_request_id": {"type": "null"},
+              "source_asset_sha256": {"type": "null"},
+              "review_decision": {"const": "not_applicable"}
+            }
+          }
         }
-      }
+      ]
     }
   }
 }
