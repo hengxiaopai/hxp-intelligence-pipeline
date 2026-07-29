@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "timezone": "Asia/Shanghai",
+  "required_files": [
+    "candidate-pool.json",
+    "editorial-scores.json",
+    "briefing.json",
+    "briefing.md",
+    "run.json"
+  ],
+  "source_directory": "sources",
+  "review_required": true,
+  "publication_requires_approval": true,
+  "deterministic_fields": [
+    "date",
+    "generated_at",
+    "candidate-pool.json",
+    "editorial-scores.json",
+    "briefing.json",
+    "briefing.md"
+  ],
+  "forbidden_public_markdown_markers": [
+    "内部淘汰池",
+    "rejected_candidates",
+    "candidate-"
+  ]
+}
