@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/dedup-decision.schema.json",
+  "title": "HXP Dedup Decision",
+  "description": "候选事件经过 3/7/30 天去重后的可解释决策。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "candidate_id",
+    "evaluated_at",
+    "windows",
+    "decision",
+    "recommended_status",
+    "event_match",
+    "topic_match",
+    "viewpoint_match",
+    "title_reuse_warning",
+    "visual_reuse_warning",
+    "matched_records",
+    "new_delta",
+    "reasons",
+    "index_update"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^decision-[a-f0-9]{16,64}$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^candidate-[0-9]{8}-[0-9]{3}$"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "windows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_days", "topic_days", "asset_days"],
+      "properties": {
+        "event_days": {"type": "integer", "const": 3},
+        "topic_days": {"type": "integer", "const": 7},
+        "asset_days": {"type": "integer", "const": 30}
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "select_new",
+        "continuation",
+        "reject_duplicate_event",
+        "reject_duplicate_viewpoint",
+        "manual_review"
+      ]
+    },
+    "recommended_status": {
+      "type": "string",
+      "enum": ["pending_review", "deduped", "rejected", "selected"]
+    },
+    "event_match": {"type": "boolean"},
+    "topic_match": {"type": "boolean"},
+    "viewpoint_match": {"type": "boolean"},
+    "title_reuse_warning": {"type": "boolean"},
+    "visual_reuse_warning": {"type": "boolean"},
+    "matched_records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/match"
+      }
+    },
+    "new_delta": {
+      "type": ["string", "null"],
+      "maxLength": 400
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "maxLength": 240
+      }
+    },
+    "index_update": {
+      "type": "string",
+      "enum": ["create", "update", "none"]
+    }
+  },
+  "$defs": {
+    "match": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "match_type",
+        "days_apart",
+        "similarity",
+        "evidence"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "pattern": "^dedup-[a-f0-9]{16,64}$"
+        },
+        "match_type": {
+          "type": "string",
+          "enum": ["event", "topic", "viewpoint", "title", "visual"]
+        },
+        "days_apart": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 36500
+        },
+        "similarity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 300
+        }
+      }
+    }
+  }
+}
