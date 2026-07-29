@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "weights": {
+    "authority": 0.16,
+    "freshness": 0.10,
+    "relevance": 0.16,
+    "evidence_quality": 0.14,
+    "impact": 0.18,
+    "novelty": 0.12,
+    "content_value": 0.08,
+    "product_value": 0.06
+  },
+  "risk_penalties": {
+    "unconfirmed": 14,
+    "policy_in_discussion": 5,
+    "financial_not_audited": 4,
+    "market_data_time_sensitive": 4,
+    "investment_advice_risk": 3,
+    "copyright_risk": 8,
+    "platform_review_risk": 5,
+    "security_sensitive": 5,
+    "brand_affiliation_risk": 6,
+    "community_content": 8,
+    "none": 0
+  },
+  "thresholds": {
+    "select_new": 68,
+    "select_continuation": 62,
+    "manual_review": 58,
+    "low_confidence_cap": 49,
+    "observe_confidence_cap": 67,
+    "max_risk_penalty": 30
+  },
+  "selection": {
+    "target_min_new_items": 5,
+    "target_max_new_items": 8,
+    "max_continuation_items": 2,
+    "category_soft_cap": 3,
+    "minimum_new_or_new_angle_ratio": 0.6
+  },
+  "high_risk_flags": [
+    "unconfirmed",
+    "policy_in_discussion",
+    "financial_not_audited",
+    "market_data_time_sensitive",
+    "investment_advice_risk",
+    "security_sensitive"
+  ]
+}
