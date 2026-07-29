@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#F4FAFF"/>
+  <circle cx="256" cy="220" r="142" fill="#FFFFFF" stroke="#0C5BFF" stroke-width="18"/>
+  <path d="M150 272 L218 168 L256 224 L304 146 L368 272" fill="none" stroke="#0C5BFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="222" r="28" fill="#23B7FF"/>
+  <text x="256" y="410" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="700" fill="#10233F">HXP TEST</text>
+</svg>
