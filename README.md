@@ -134,5 +134,5 @@ python scripts/source_registry.py --list --active-only
 - Phase 1.2：六 Agent Prompt Engine ✅
 - Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
 - Phase 2.1：官方来源注册表与候选事件池 ✅
-- Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 🚧
+- Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ✅
 - Phase 2.3：候选规范化、稳定指纹与去重索引 ⏳
