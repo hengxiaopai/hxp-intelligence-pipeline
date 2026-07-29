@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/source-registry.schema.json",
+  "title": "HXP Source Registry",
+  "description": "珩小派情报采集来源注册表。定义来源权威等级、采集方式、时效、访问约束与风险说明。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "updated_at", "sources"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/registrySource"
+      }
+    }
+  },
+  "$defs": {
+    "registrySource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_id",
+        "name",
+        "url",
+        "publisher",
+        "primary_category",
+        "tags",
+        "language",
+        "region",
+        "source_type",
+        "authority_level",
+        "content_scope",
+        "collection_method",
+        "priority",
+        "max_age_hours",
+        "min_interval_minutes",
+        "active",
+        "requires_auth",
+        "access_policy",
+        "parser_hint",
+        "risk_notes"
+      ],
+      "properties": {
+        "registry_id": {
+          "type": "string",
+          "pattern": "^registry-[a-z0-9][a-z0-9-]{4,80}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "publisher": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "primary_category": {
+          "type": "string",
+          "enum": [
+            "ai_technology",
+            "developer_tools",
+            "open_source",
+            "ai_hardware",
+            "a_share_industry",
+            "product_trend",
+            "social_content",
+            "design_brand",
+            "policy_regulation",
+            "business_strategy",
+            "consumer_ai",
+            "career_skills",
+            "risk_counter_signal"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{1,40}$"
+          }
+        },
+        "language": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["zh-CN", "en", "multi"]
+          }
+        },
+        "region": {
+          "type": "string",
+          "enum": ["global", "US", "CN", "EU", "APAC"]
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "official",
+            "paper",
+            "financial_filing",
+            "github",
+            "platform",
+            "media",
+            "community",
+            "design_gallery"
+          ]
+        },
+        "authority_level": {
+          "type": "string",
+          "enum": [
+            "tier_1_official",
+            "tier_2_reliable_media",
+            "tier_3_signal_only"
+          ]
+        },
+        "content_scope": {
+          "type": "string",
+          "enum": [
+            "official_only",
+            "mixed_official_community",
+            "platform_rankings",
+            "regulatory_filings",
+            "research_preprints",
+            "design_inspiration"
+          ]
+        },
+        "collection_method": {
+          "type": "string",
+          "enum": ["html_index", "rss", "api", "manual_review"]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1 为最高优先级。"
+        },
+        "max_age_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 720
+        },
+        "min_interval_minutes": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 10080
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "requires_auth": {
+          "type": "boolean"
+        },
+        "access_policy": {
+          "type": "string",
+          "enum": [
+            "respect_robots_and_terms",
+            "manual_only",
+            "official_api_only"
+          ]
+        },
+        "parser_hint": {
+          "type": "string",
+          "enum": [
+            "article_cards",
+            "changelog_cards",
+            "repository_cards",
+            "paper_feed",
+            "product_rankings",
+            "announcement_search",
+            "design_cards",
+            "manual"
+          ]
+        },
+        "risk_notes": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 400
+        },
+        "fallback_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}
