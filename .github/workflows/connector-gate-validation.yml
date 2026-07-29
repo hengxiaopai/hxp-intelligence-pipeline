@@ -1,0 +1,155 @@
+name: Connector Gate Validation
+
+on:
+  pull_request:
+    paths:
+      - "config/connectors.json"
+      - "schemas/connector-*.schema.json"
+      - "publishing/connector_gate.py"
+      - "publishing/connectors/**"
+      - "scripts/inspect_connector_capabilities.py"
+      - "scripts/issue_connector_authorization.py"
+      - "scripts/build_connector_request.py"
+      - "scripts/simulate_connector_write.py"
+      - "tests/test_connector_gate.py"
+      - "docs/CONNECTORS.md"
+      - ".github/workflows/connector-gate-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connector-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validation dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+
+      - name: Compile connector code
+        run: >-
+          python -m py_compile
+          publishing/connector_gate.py
+          publishing/connectors/__init__.py
+          publishing/connectors/base.py
+          publishing/connectors/registry.py
+          publishing/connectors/simulator.py
+          scripts/inspect_connector_capabilities.py
+          scripts/issue_connector_authorization.py
+          scripts/build_connector_request.py
+          scripts/simulate_connector_write.py
+          tests/test_connector_gate.py
+
+      - name: Validate capability registry
+        run: |
+          python scripts/validate.py --schema schemas/connector-capability.schema.json --data config/connectors.json
+          python scripts/inspect_connector_capabilities.py
+
+      - name: Run connector gate tests
+        run: python -m unittest tests.test_connector_gate -v
+
+      - name: Build approved offline plan fixture
+        run: |
+          mkdir -p /tmp/hxp-connector
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          entry = {
+              'entry_id': 'publication-entry-20260729-website',
+              'platform': 'website',
+              'package_id': 'content-package-20260729-website',
+              'account_ref': None,
+              'action': 'draft_only',
+              'approval_status': 'approved',
+              'idempotency_key': 'pub-' + '1' * 48,
+              'content_hash': '2' * 64,
+              'asset_hashes': ['3' * 64, '4' * 64],
+              'scheduled_at': None,
+              'risk_flags': ['none'],
+              'write_allowed': False,
+          }
+          plan = {
+              'schema_version': '1.0.0',
+              'plan_id': 'publication-plan-20260729',
+              'package_batch_id': 'content-package-batch-20260729',
+              'created_at': '2026-07-29T15:00:00+08:00',
+              'default_action': 'draft_only',
+              'write_actions_enabled': False,
+              'entries': [entry],
+              'summary': {'total': 1, 'pending': 0, 'approved': 1, 'rejected': 0, 'blocked': 0},
+          }
+          Path('/tmp/hxp-connector/plan.json').write_text(
+              json.dumps(plan, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+          )
+          PY
+
+      - name: Issue and consume exact authorization
+        run: |
+          python scripts/issue_connector_authorization.py \
+            --plan /tmp/hxp-connector/plan.json \
+            --connector-id simulator-draft \
+            --entry-id publication-entry-20260729-website \
+            --account-ref hxp-website-staging \
+            --issued-at 2026-07-29T16:00:00+08:00 \
+            --expires-at 2026-07-29T17:00:00+08:00 \
+            --issued-by connector-ci \
+            --output /tmp/hxp-connector/authorization.json
+          python scripts/validate.py \
+            --schema schemas/connector-authorization.schema.json \
+            --data /tmp/hxp-connector/authorization.json
+          python scripts/build_connector_request.py \
+            --authorization /tmp/hxp-connector/authorization.json \
+            --plan /tmp/hxp-connector/plan.json \
+            --package-id content-package-20260729-website \
+            --account-ref hxp-website-staging \
+            --requested-at 2026-07-29T16:30:00+08:00 \
+            --request-output /tmp/hxp-connector/request.json \
+            --authorization-output /tmp/hxp-connector/authorization.consumed.json
+          python scripts/validate.py \
+            --schema schemas/connector-request.schema.json \
+            --data /tmp/hxp-connector/request.json
+          python scripts/validate.py \
+            --schema schemas/connector-authorization.schema.json \
+            --data /tmp/hxp-connector/authorization.consumed.json
+          grep -q '"status": "consumed"' /tmp/hxp-connector/authorization.consumed.json
+
+      - name: Simulate draft and verify idempotent replay
+        run: |
+          python scripts/simulate_connector_write.py \
+            --request /tmp/hxp-connector/request.json \
+            --executed-at 2026-07-29T16:31:00+08:00 \
+            --result-output /tmp/hxp-connector/result.first.json \
+            --ledger-output /tmp/hxp-connector/ledger.json
+          python scripts/simulate_connector_write.py \
+            --request /tmp/hxp-connector/request.json \
+            --ledger /tmp/hxp-connector/ledger.json \
+            --executed-at 2026-07-29T16:32:00+08:00 \
+            --result-output /tmp/hxp-connector/result.replay.json \
+            --ledger-output /tmp/hxp-connector/ledger.replay.json
+          python scripts/validate.py --schema schemas/connector-result.schema.json --data /tmp/hxp-connector/result.first.json
+          python scripts/validate.py --schema schemas/connector-result.schema.json --data /tmp/hxp-connector/result.replay.json
+          python scripts/validate.py --schema schemas/connector-ledger.schema.json --data /tmp/hxp-connector/ledger.json
+          grep -q '"external_write_performed": false' /tmp/hxp-connector/result.first.json
+          grep -q '"status": "idempotent_replay"' /tmp/hxp-connector/result.replay.json
+          test "$(grep -c 'idempotency_key' /tmp/hxp-connector/ledger.json)" -eq 1
+          cmp /tmp/hxp-connector/ledger.json /tmp/hxp-connector/ledger.replay.json
+
+      - name: Upload connector audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-connector-gate-audit-2026-07-29
+          path: /tmp/hxp-connector
+          if-no-files-found: error
+          retention-days: 7

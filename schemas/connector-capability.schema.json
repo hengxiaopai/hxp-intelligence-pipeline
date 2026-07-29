@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/connector-capability.schema.json",
+  "title": "HXP Connector Capability Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "version", "real_writes_enabled", "default_mode", "connectors", "global_rules"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "real_writes_enabled": {"type": "boolean", "const": false},
+    "default_mode": {"type": "string", "const": "simulator"},
+    "connectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/connector"}
+    },
+    "global_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentials_in_repository_forbidden",
+        "credentials_in_logs_forbidden",
+        "raw_private_response_storage_forbidden",
+        "authorization_must_bind_content_and_asset_hashes",
+        "authorization_expiry_required",
+        "identity_mismatch_hard_block",
+        "captcha_or_risk_control_hard_block",
+        "unknown_error_auto_retry_forbidden",
+        "public_publish_requires_new_confirmation"
+      ],
+      "properties": {
+        "credentials_in_repository_forbidden": {"type": "boolean", "const": true},
+        "credentials_in_logs_forbidden": {"type": "boolean", "const": true},
+        "raw_private_response_storage_forbidden": {"type": "boolean", "const": true},
+        "authorization_must_bind_content_and_asset_hashes": {"type": "boolean", "const": true},
+        "authorization_expiry_required": {"type": "boolean", "const": true},
+        "identity_mismatch_hard_block": {"type": "boolean", "const": true},
+        "captcha_or_risk_control_hard_block": {"type": "boolean", "const": true},
+        "unknown_error_auto_retry_forbidden": {"type": "boolean", "const": true},
+        "public_publish_requires_new_confirmation": {"type": "boolean", "const": true}
+      }
+    }
+  },
+  "$defs": {
+    "connector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connector_id",
+        "platform",
+        "mode",
+        "enabled",
+        "allowed_actions",
+        "credential_environment_variables",
+        "requires_explicit_authorization",
+        "supports_idempotency",
+        "supports_status_lookup",
+        "supports_update",
+        "supports_public_publish"
+      ],
+      "properties": {
+        "connector_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "mode": {"type": "string", "enum": ["simulator", "real", "manual_handoff"]},
+        "enabled": {"type": "boolean"},
+        "allowed_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "enum": ["draft_only", "manual_publish", "connector_publish"]}
+        },
+        "credential_environment_variables": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,100}$"}
+        },
+        "requires_explicit_authorization": {"type": "boolean", "const": true},
+        "supports_idempotency": {"type": "boolean", "const": true},
+        "supports_status_lookup": {"type": "boolean"},
+        "supports_update": {"type": "boolean"},
+        "supports_public_publish": {"type": "boolean", "const": false}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "real"}}},
+          "then": {"properties": {"enabled": {"const": false}}}
+        }
+      ]
+    }
+  }
+}
