@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>HXP Offline AI Research Feed</title>
+    <link>https://export.arxiv.org/rss/cs.AI</link>
+    <description>Deterministic fixture; not a live arXiv response.</description>
+    <item>
+      <title>Auditable Agents for Long-Horizon Workflows</title>
+      <link>https://arxiv.org/abs/2607.00001</link>
+      <guid isPermaLink="true">https://arxiv.org/abs/2607.00001</guid>
+      <pubDate>Tue, 28 Jul 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Example Research Group</dc:creator>
+      <category>Artificial Intelligence</category>
+      <description><![CDATA[We introduce an <b>offline fixture</b> for testing agent audit trails.]]></description>
+    </item>
+    <item>
+      <title>Cost-Aware Routing Across Language Models</title>
+      <link>https://arxiv.org/abs/2607.00002</link>
+      <guid isPermaLink="true">https://arxiv.org/abs/2607.00002</guid>
+      <pubDate>Tue, 28 Jul 2026 13:00:00 +0000</pubDate>
+      <dc:creator>Example Systems Lab</dc:creator>
+      <category>Machine Learning</category>
+      <description><![CDATA[A deterministic sample about model routing and budget constraints.]]></description>
+    </item>
+  </channel>
+</rss>
