@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "entities": [
+    {
+      "canonical": "OpenAI",
+      "aliases": ["openai", "open ai", "开放人工智能"]
+    },
+    {
+      "canonical": "Anthropic",
+      "aliases": ["anthropic", "安澜思"]
+    },
+    {
+      "canonical": "Google",
+      "aliases": ["google", "谷歌"]
+    },
+    {
+      "canonical": "GitHub",
+      "aliases": ["github", "git hub"]
+    },
+    {
+      "canonical": "GitHub Copilot",
+      "aliases": ["github copilot", "copilot"]
+    },
+    {
+      "canonical": "Dependabot",
+      "aliases": ["dependabot", "dependa bot"]
+    },
+    {
+      "canonical": "OpenSSF malicious-packages",
+      "aliases": [
+        "openssf malicious-packages",
+        "openssf malicious packages",
+        "malicious-packages"
+      ]
+    },
+    {
+      "canonical": "Hugging Face",
+      "aliases": ["hugging face", "huggingface"]
+    },
+    {
+      "canonical": "Product Hunt",
+      "aliases": ["product hunt", "producthunt"]
+    },
+    {
+      "canonical": "上海证券交易所",
+      "aliases": ["上海证券交易所", "上交所", "sse"]
+    },
+    {
+      "canonical": "深圳证券交易所",
+      "aliases": ["深圳证券交易所", "深交所", "szse"]
+    }
+  ]
+}

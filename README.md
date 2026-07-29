@@ -32,6 +32,7 @@ hxp-intelligence-pipeline/
 │   ├── rss.py
 │   └── snapshot.py
 ├── config/
+│   ├── entity-aliases.json
 │   └── sources.json
 ├── data/
 │   └── examples/
@@ -39,10 +40,14 @@ hxp-intelligence-pipeline/
 │   ├── ARCHITECTURE.md
 │   ├── COLLECTORS.md
 │   ├── CONTENT-SPEC.md
+│   ├── DEDUP.md
 │   ├── PROMPT-ENGINE.md
 │   ├── RUNBOOK.md
 │   ├── SOURCE-REGISTRY.md
 │   └── VISUAL-SPEC.md
+├── pipeline/
+│   ├── dedup.py
+│   └── normalization.py
 ├── prompts/
 │   ├── dedup-agent.md
 │   ├── editorial-reviewer.md
@@ -53,18 +58,23 @@ hxp-intelligence-pipeline/
 ├── schemas/
 │   ├── briefing.schema.json
 │   ├── candidate.schema.json
+│   ├── dedup-decision.schema.json
+│   ├── dedup-index.schema.json
 │   ├── manifest.schema.json
 │   ├── raw-snapshot.schema.json
 │   ├── source-registry.schema.json
 │   └── source.schema.json
 ├── scripts/
 │   ├── collect.py
+│   ├── dedup_candidate.py
+│   ├── normalize_candidate.py
 │   ├── source_registry.py
 │   ├── validate.py
 │   └── validate_candidate.py
 ├── tests/
 │   ├── fixtures/
-│   └── test_collectors.py
+│   ├── test_collectors.py
+│   └── test_normalization_dedup.py
 ├── .github/workflows/
 │   └── schema-validation.yml
 └── requirements-dev.txt
@@ -86,13 +96,13 @@ python scripts/source_registry.py --validate
 python scripts/validate_candidate.py
 ```
 
-运行离线采集测试：
+运行全部离线测试：
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-使用 RSS fixture 生成原始快照：
+### 1. 生成原始快照
 
 ```bash
 python scripts/collect.py \
@@ -101,19 +111,34 @@ python scripts/collect.py \
   --output-dir /tmp/hxp-rss
 ```
 
-使用 HTML fixture：
+### 2. 规范化为候选事件
 
 ```bash
-python scripts/collect.py \
-  --registry-id registry-github-changelog \
-  --input-file tests/fixtures/github-changelog.html \
-  --output-dir /tmp/hxp-html
+SNAPSHOT=$(find /tmp/hxp-rss -name '*.json' -print -quit)
+
+python scripts/normalize_candidate.py \
+  --snapshot "$SNAPSHOT" \
+  --source tests/fixtures/arxiv-source.json \
+  --item-index 0 \
+  --sequence 1 \
+  --entity "Example Research Group" \
+  --action "发布预印本" \
+  --object "可审计 Agent 工作流研究" \
+  --primary-category ai_technology \
+  --information-type paper \
+  --risk-flag unconfirmed \
+  --output /tmp/hxp-candidate.json
 ```
 
-查看首批启用来源：
+### 3. 执行 3/7/30 天去重
 
 ```bash
-python scripts/source_registry.py --list --active-only
+python scripts/dedup_candidate.py \
+  --candidate /tmp/hxp-candidate.json \
+  --index data/dedup/index.json \
+  --decision-output /tmp/hxp-decision.json \
+  --updated-index-output /tmp/hxp-index.json \
+  --apply
 ```
 
 详细说明：
@@ -121,6 +146,7 @@ python scripts/source_registry.py --list --active-only
 - 运行与发布流程：[`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 - 来源注册策略：[`docs/SOURCE-REGISTRY.md`](docs/SOURCE-REGISTRY.md)
 - 采集器安全边界：[`docs/COLLECTORS.md`](docs/COLLECTORS.md)
+- 规范化与去重规则：[`docs/DEDUP.md`](docs/DEDUP.md)
 
 ## 自动化入口
 
@@ -135,4 +161,5 @@ python scripts/source_registry.py --list --active-only
 - Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
 - Phase 2.1：官方来源注册表与候选事件池 ✅
 - Phase 2.2：RSS / HTML 轻量采集适配器与原始快照 ✅
-- Phase 2.3：候选规范化、稳定指纹与去重索引 ⏳
+- Phase 2.3：候选规范化、稳定指纹与去重索引 🚧
+- Phase 3：编辑评分、日报组装与真实候选池运行 ⏳

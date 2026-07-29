@@ -8,6 +8,7 @@ on:
       - "config/**"
       - "data/examples/**"
       - "collectors/**"
+      - "pipeline/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
@@ -18,6 +19,7 @@ on:
       - "config/**"
       - "data/examples/**"
       - "collectors/**"
+      - "pipeline/**"
       - "scripts/**"
       - "tests/**"
       - "requirements-dev.txt"
@@ -46,19 +48,25 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
 
-      - name: Compile validation and collector code
+      - name: Compile pipeline code
         run: >-
           python -m py_compile
           scripts/validate.py
           scripts/source_registry.py
           scripts/validate_candidate.py
           scripts/collect.py
+          scripts/normalize_candidate.py
+          scripts/dedup_candidate.py
           collectors/__init__.py
           collectors/base.py
           collectors/rss.py
           collectors/html_index.py
           collectors/snapshot.py
+          pipeline/__init__.py
+          pipeline/normalization.py
+          pipeline/dedup.py
           tests/test_collectors.py
+          tests/test_normalization_dedup.py
 
       - name: Validate briefing, source, and manifest examples
         run: python scripts/validate.py --examples
@@ -75,6 +83,18 @@ jobs:
           --schema schemas/source.schema.json
           --data data/examples/candidate-source.example.json
 
+      - name: Validate dedup history example
+        run: >-
+          python scripts/validate.py
+          --schema schemas/dedup-index.schema.json
+          --data data/examples/dedup-index.example.json
+
+      - name: Validate normalization source fixture
+        run: >-
+          python scripts/validate.py
+          --schema schemas/source.schema.json
+          --data tests/fixtures/arxiv-source.json
+
       - name: Validate source registry schema
         run: >-
           python scripts/validate.py
@@ -87,7 +107,7 @@ jobs:
       - name: Validate candidate cross-file references
         run: python scripts/validate_candidate.py
 
-      - name: Run offline collector tests
+      - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
 
       - name: Exercise RSS fixture CLI
@@ -103,3 +123,40 @@ jobs:
           --registry-id registry-github-changelog
           --input-file tests/fixtures/github-changelog.html
           --output-dir /tmp/hxp-html
+
+      - name: Exercise snapshot to candidate to dedup flow
+        shell: bash
+        run: |
+          set -euo pipefail
+          SNAPSHOT="$(find /tmp/hxp-rss -maxdepth 1 -name '*.json' -print -quit)"
+          test -n "$SNAPSHOT"
+
+          python scripts/normalize_candidate.py \
+            --snapshot "$SNAPSHOT" \
+            --source tests/fixtures/arxiv-source.json \
+            --item-index 0 \
+            --sequence 1 \
+            --entity "Example Research Group" \
+            --action "发布预印本" \
+            --object "可审计 Agent 工作流研究" \
+            --primary-category ai_technology \
+            --information-type paper \
+            --risk-flag unconfirmed \
+            --output /tmp/hxp-candidate.json
+
+          python scripts/dedup_candidate.py \
+            --candidate /tmp/hxp-candidate.json \
+            --index /tmp/hxp-empty-index.json \
+            --decision-output /tmp/hxp-decision.json \
+            --updated-index-output /tmp/hxp-index.json \
+            --apply
+
+          python scripts/validate.py \
+            --schema schemas/candidate.schema.json \
+            --data /tmp/hxp-candidate.json
+          python scripts/validate.py \
+            --schema schemas/dedup-decision.schema.json \
+            --data /tmp/hxp-decision.json
+          python scripts/validate.py \
+            --schema schemas/dedup-index.schema.json \
+            --data /tmp/hxp-index.json
