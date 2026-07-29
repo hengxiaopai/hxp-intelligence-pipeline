@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/raw-snapshot.schema.json",
+  "title": "HXP Raw Collection Snapshot",
+  "description": "RSS/HTML 采集阶段的可审计快照。快照只表示发现结果，不代表事实已审核或入选正式简报。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "source_registry_id",
+    "requested_url",
+    "final_url",
+    "collection_method",
+    "fetch_mode",
+    "retrieved_at",
+    "http_status",
+    "content_type",
+    "content_hash",
+    "byte_size",
+    "body_path",
+    "parser_version",
+    "items",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "pattern": "^snapshot-[0-9]{8}T[0-9]{6}Z-[a-z0-9][a-z0-9-]{4,80}$"
+    },
+    "source_registry_id": {
+      "type": "string",
+      "pattern": "^registry-[a-z0-9][a-z0-9-]{4,80}$"
+    },
+    "requested_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "final_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "collection_method": {
+      "type": "string",
+      "enum": ["rss", "html_index"]
+    },
+    "fetch_mode": {
+      "type": "string",
+      "enum": ["fixture", "live"]
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "http_status": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 599
+    },
+    "content_type": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "byte_size": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2097152
+    },
+    "body_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "parser_version": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,40}$"
+    },
+    "selected_headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "propertyNames": {
+        "enum": ["content-type", "etag", "last-modified", "cache-control"]
+      }
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/discoveredItem"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 240
+      }
+    }
+  },
+  "$defs": {
+    "discoveredItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_id", "title", "url", "authors", "tags"],
+      "properties": {
+        "external_id": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 240
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "summary": {
+          "type": ["string", "null"],
+          "maxLength": 1200
+        },
+        "authors": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      }
+    }
+  }
+}
