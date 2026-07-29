@@ -37,11 +37,11 @@
   "freshness_score": 100,
   "relevance_score": 88,
   "preliminary_confidence": "high",
-  "event_fingerprint": "evt-3a8f0d7e21b6c904",
+  "event_fingerprint": "evt-c104fed39fdaf2d9b9484efbad5c39b3",
   "dedup_keys": {
     "entities": ["GitHub", "Dependabot", "OpenSSF malicious-packages"],
     "action": "扩大告警覆盖",
-    "object": "恶意软件包生态覆盖",
+    "object": "跨 npm、PyPI 等生态的恶意软件包",
     "date_bucket": "2026-07-28"
   },
   "risk_flags": ["none"],
