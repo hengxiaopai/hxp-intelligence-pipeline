@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "real_writes_enabled": false,
+  "default_mode": "simulator",
+  "connectors": [
+    {
+      "connector_id": "simulator-draft",
+      "platform": "website",
+      "mode": "simulator",
+      "enabled": true,
+      "allowed_actions": ["draft_only"],
+      "credential_environment_variables": [],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": true,
+      "supports_update": false,
+      "supports_public_publish": false
+    },
+    {
+      "connector_id": "website-draft",
+      "platform": "website",
+      "mode": "real",
+      "enabled": false,
+      "allowed_actions": ["draft_only"],
+      "credential_environment_variables": ["HXP_WEBSITE_DRAFT_TOKEN"],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": true,
+      "supports_update": true,
+      "supports_public_publish": false
+    },
+    {
+      "connector_id": "wechat-draft",
+      "platform": "wechat",
+      "mode": "real",
+      "enabled": false,
+      "allowed_actions": ["draft_only"],
+      "credential_environment_variables": ["HXP_WECHAT_APP_ID", "HXP_WECHAT_APP_SECRET"],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": true,
+      "supports_update": false,
+      "supports_public_publish": false
+    },
+    {
+      "connector_id": "x-manual-handoff",
+      "platform": "x",
+      "mode": "manual_handoff",
+      "enabled": false,
+      "allowed_actions": ["manual_publish"],
+      "credential_environment_variables": [],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": false,
+      "supports_update": false,
+      "supports_public_publish": false
+    },
+    {
+      "connector_id": "xiaohongshu-manual-handoff",
+      "platform": "xiaohongshu",
+      "mode": "manual_handoff",
+      "enabled": false,
+      "allowed_actions": ["manual_publish"],
+      "credential_environment_variables": [],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": false,
+      "supports_update": false,
+      "supports_public_publish": false
+    },
+    {
+      "connector_id": "douyin-manual-handoff",
+      "platform": "douyin",
+      "mode": "manual_handoff",
+      "enabled": false,
+      "allowed_actions": ["manual_publish"],
+      "credential_environment_variables": [],
+      "requires_explicit_authorization": true,
+      "supports_idempotency": true,
+      "supports_status_lookup": false,
+      "supports_update": false,
+      "supports_public_publish": false
+    }
+  ],
+  "global_rules": {
+    "credentials_in_repository_forbidden": true,
+    "credentials_in_logs_forbidden": true,
+    "raw_private_response_storage_forbidden": true,
+    "authorization_must_bind_content_and_asset_hashes": true,
+    "authorization_expiry_required": true,
+    "identity_mismatch_hard_block": true,
+    "captcha_or_risk_control_hard_block": true,
+    "unknown_error_auto_retry_forbidden": true,
+    "public_publish_requires_new_confirmation": true
+  }
+}
