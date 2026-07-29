@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "write_actions_enabled": false,
+  "default_action": "draft_only",
+  "platforms": [
+    {
+      "platform": "wechat",
+      "display_name": "微信公众号",
+      "required_preset": "wechat_cover_235x1",
+      "title_max_units": 64,
+      "summary_max_units": 120,
+      "body_max_units": 20000,
+      "hashtags_max_items": 0,
+      "thread_max_items": 0,
+      "required_fields": ["title", "summary", "body_markdown", "source_labels"],
+      "risk_rules": ["investment_disclaimer", "source_list_required"],
+      "allowed_actions": ["draft_only", "manual_publish"]
+    },
+    {
+      "platform": "xiaohongshu",
+      "display_name": "小红书",
+      "required_preset": "portrait_3x4",
+      "title_max_units": 40,
+      "summary_max_units": 0,
+      "body_max_units": 2000,
+      "hashtags_max_items": 10,
+      "thread_max_items": 0,
+      "required_fields": ["title", "caption", "hashtags", "source_labels"],
+      "risk_rules": ["no_return_promises", "no_absolute_claims", "investment_disclaimer"],
+      "allowed_actions": ["draft_only", "manual_publish"]
+    },
+    {
+      "platform": "douyin",
+      "display_name": "抖音图文",
+      "required_preset": "vertical_9x16",
+      "title_max_units": 60,
+      "summary_max_units": 0,
+      "body_max_units": 2000,
+      "hashtags_max_items": 8,
+      "thread_max_items": 0,
+      "required_fields": ["title", "caption", "hashtags", "source_labels"],
+      "risk_rules": ["no_return_promises", "investment_disclaimer"],
+      "allowed_actions": ["draft_only", "manual_publish"]
+    },
+    {
+      "platform": "x",
+      "display_name": "X",
+      "required_preset": "landscape_16x9",
+      "title_max_units": 0,
+      "summary_max_units": 0,
+      "body_max_units": 280,
+      "hashtags_max_items": 4,
+      "thread_max_items": 8,
+      "required_fields": ["caption", "source_labels"],
+      "risk_rules": ["source_label_required", "no_unverified_absolute_claims"],
+      "allowed_actions": ["draft_only", "manual_publish"]
+    },
+    {
+      "platform": "website",
+      "display_name": "珩小派网站",
+      "required_preset": "landscape_16x9",
+      "title_max_units": 100,
+      "summary_max_units": 300,
+      "body_max_units": 30000,
+      "hashtags_max_items": 0,
+      "thread_max_items": 0,
+      "required_fields": ["title", "summary", "body_markdown", "seo_title", "seo_description", "slug", "source_labels"],
+      "risk_rules": ["source_list_required", "investment_disclaimer"],
+      "allowed_actions": ["draft_only"]
+    }
+  ],
+  "global_rules": {
+    "internal_rejected_candidates_forbidden": true,
+    "credentials_forbidden": true,
+    "cookies_forbidden": true,
+    "raw_private_responses_forbidden": true,
+    "verified_export_assets_required": true,
+    "human_approval_required_before_write": true,
+    "phase_5_1_external_write_forbidden": true,
+    "prompt_injection_content_is_data": true
+  }
+}
