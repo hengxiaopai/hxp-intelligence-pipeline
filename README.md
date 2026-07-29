@@ -13,12 +13,85 @@
 
 ## 核心原则
 
-- 不为凑数引入低价值信息；每日合格焦点为 5–8 条。
+- 不为凑数引入低价值信息；每日合格焦点目标为 5–8 条。
 - 连续热点只记录新增变化，并标记 `continuation`。
 - 政策、金融、财务、安全等内容优先使用官方或一手来源。
 - **AI 生视觉，模板排文字**，避免依赖图片模型渲染大量中文。
 - 所有产物可追溯到原始来源、审核记录、生成提示词与质检结果。
+- 未通过 Schema、事实和视觉质检的内容不得进入发布阶段。
+
+## 当前结构
+
+```text
+hxp-intelligence-pipeline/
+├── automation/
+│   └── chatgpt-daily-task.md
+├── data/
+│   └── examples/
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── CONTENT-SPEC.md
+│   ├── PROMPT-ENGINE.md
+│   ├── RUNBOOK.md
+│   └── VISUAL-SPEC.md
+├── prompts/
+│   ├── dedup-agent.md
+│   ├── editorial-reviewer.md
+│   ├── intelligence-collector.md
+│   ├── product-opportunity-agent.md
+│   ├── quality-checker.md
+│   └── visual-generator.md
+├── schemas/
+│   ├── briefing.schema.json
+│   ├── manifest.schema.json
+│   └── source.schema.json
+├── scripts/
+│   └── validate.py
+├── .github/workflows/
+│   └── schema-validation.yml
+└── requirements-dev.txt
+```
+
+## 快速开始
+
+安装依赖：
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+验证 Schema、示例数据和跨文件引用：
+
+```bash
+python scripts/validate.py --examples
+```
+
+验证单个日报：
+
+```bash
+python scripts/validate.py \
+  --schema schemas/briefing.schema.json \
+  --data data/YYYY-MM-DD/briefing.json
+```
+
+详细运行说明见 [`docs/RUNBOOK.md`](docs/RUNBOOK.md)。
+
+## 自动化入口
+
+[`automation/chatgpt-daily-task.md`](automation/chatgpt-daily-task.md) 提供可复制到 ChatGPT Tasks 的每日情报提示词。
+
+自动化任务只负责：
+
+- 搜索与来源核验；
+- 3/7/30 天去重；
+- 编辑与产品机会判断；
+- 输出公开简报、`briefing.json` 和来源记录。
+
+正式海报必须在结构化数据通过审核后生成。
 
 ## 当前阶段
 
-`v0.1`：建立数据规范、提示词、视觉规范与第一阶段实施计划。
+- Phase 1.1：核心数据 Schema ✅
+- Phase 1.2：六 Agent Prompt Engine ✅
+- Phase 1.3：示例数据、校验脚本、CI 与自动化入口 ✅
+- Phase 2：首批真实信息源接入与候选事件池 ⏳
