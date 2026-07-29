@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "timezone": "Asia/Shanghai",
+  "scheduled_hour": 9,
+  "scheduled_minute": 0,
+  "max_sources_per_plan": 8,
+  "max_priority": 3,
+  "live_collection_default": false,
+  "allowed_live_methods": ["rss", "html_index"],
+  "blocked_live_access_policies": ["manual_only", "official_api_only"],
+  "failure_retry_minutes": 180,
+  "failure_issue_cooldown_hours": 24,
+  "failure_issue_creation_default": false,
+  "state_path": "data/state/source-watermarks.json",
+  "dedup_index_path": "data/state/dedup-index.json",
+  "failure_directory": "data/failures"
+}
