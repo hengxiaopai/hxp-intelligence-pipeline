@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/editorial-score.schema.json",
+  "title": "HXP Editorial Score Report",
+  "description": "候选事件的确定性编辑评分、准入结论和解释记录。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "date",
+    "generated_at",
+    "weights_version",
+    "scores"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^editorial-score-[0-9]{8}$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "weights_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/score"
+      }
+    }
+  },
+  "$defs": {
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "primary_category",
+        "novelty_kind",
+        "components",
+        "final_score",
+        "eligibility",
+        "recommended_action",
+        "reasons",
+        "rank"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "pattern": "^candidate-[0-9]{8}-[0-9]{3}$"
+        },
+        "primary_category": {
+          "type": "string",
+          "enum": [
+            "ai_technology",
+            "developer_tools",
+            "open_source",
+            "ai_hardware",
+            "a_share_industry",
+            "product_trend",
+            "social_content",
+            "design_brand",
+            "policy_regulation",
+            "business_strategy",
+            "consumer_ai",
+            "career_skills",
+            "risk_counter_signal"
+          ]
+        },
+        "novelty_kind": {
+          "type": "string",
+          "enum": ["new_theme", "new_angle", "continuation", "repeated"]
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authority",
+            "freshness",
+            "relevance",
+            "evidence_quality",
+            "impact",
+            "novelty",
+            "content_value",
+            "product_value",
+            "risk_penalty"
+          ],
+          "properties": {
+            "authority": { "$ref": "#/$defs/scoreValue" },
+            "freshness": { "$ref": "#/$defs/scoreValue" },
+            "relevance": { "$ref": "#/$defs/scoreValue" },
+            "evidence_quality": { "$ref": "#/$defs/scoreValue" },
+            "impact": { "$ref": "#/$defs/scoreValue" },
+            "novelty": { "$ref": "#/$defs/scoreValue" },
+            "content_value": { "$ref": "#/$defs/scoreValue" },
+            "product_value": { "$ref": "#/$defs/scoreValue" },
+            "risk_penalty": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "final_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "eligibility": {
+          "type": "string",
+          "enum": ["eligible", "continuation", "manual_review", "rejected"]
+        },
+        "recommended_action": {
+          "type": "string",
+          "enum": [
+            "select_new",
+            "select_continuation",
+            "manual_review",
+            "reject_duplicate",
+            "reject_no_delta",
+            "reject_low_confidence",
+            "reject_low_impact"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 220
+          }
+        },
+        "rank": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      }
+    },
+    "scoreValue": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    }
+  }
+}
