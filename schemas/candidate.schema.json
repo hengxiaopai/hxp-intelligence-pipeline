@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/candidate.schema.json",
+  "title": "HXP Intelligence Candidate Event",
+  "description": "Collector 阶段的候选事件数据结构。候选事件尚未进入正式简报，必须经过去重与编辑审核。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "observed_at",
+    "title_raw",
+    "title_normalized",
+    "canonical_entities",
+    "event_action",
+    "event_object",
+    "event_date",
+    "primary_category",
+    "information_types",
+    "summary_raw",
+    "source_ids",
+    "source_urls",
+    "evidence_claims",
+    "authority_score",
+    "freshness_score",
+    "relevance_score",
+    "preliminary_confidence",
+    "event_fingerprint",
+    "dedup_keys",
+    "risk_flags",
+    "ingestion",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^candidate-[0-9]{8}-[0-9]{3}$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "title_raw": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 220
+    },
+    "title_normalized": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 120
+    },
+    "canonical_entities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "event_action": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "event_object": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "primary_category": {
+      "type": "string",
+      "enum": [
+        "ai_technology",
+        "developer_tools",
+        "open_source",
+        "ai_hardware",
+        "a_share_industry",
+        "product_trend",
+        "social_content",
+        "design_brand",
+        "policy_regulation",
+        "business_strategy",
+        "consumer_ai",
+        "career_skills",
+        "risk_counter_signal"
+      ]
+    },
+    "information_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "official_release",
+          "paper",
+          "rumor",
+          "research_report",
+          "financial_report",
+          "earnings_guidance",
+          "social_trend",
+          "github_project",
+          "github_update",
+          "policy",
+          "funding",
+          "company_announcement",
+          "product_launch",
+          "security_incident",
+          "market_flow",
+          "design_reference"
+        ]
+      }
+    },
+    "summary_raw": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 800
+    },
+    "source_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^src-[a-z0-9][a-z0-9-]{5,80}$"
+      }
+    },
+    "source_urls": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "evidence_claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidenceClaim"
+      }
+    },
+    "authority_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "freshness_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "relevance_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "preliminary_confidence": {
+      "type": "string",
+      "enum": ["high", "medium_high", "observe", "low"]
+    },
+    "event_fingerprint": {
+      "type": "string",
+      "pattern": "^evt-[a-f0-9]{16,64}$"
+    },
+    "dedup_keys": {
+      "$ref": "#/$defs/dedupKeys"
+    },
+    "risk_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "unconfirmed",
+          "policy_in_discussion",
+          "financial_not_audited",
+          "market_data_time_sensitive",
+          "investment_advice_risk",
+          "copyright_risk",
+          "platform_review_risk",
+          "security_sensitive",
+          "brand_affiliation_risk",
+          "community_content",
+          "none"
+        ]
+      }
+    },
+    "ingestion": {
+      "$ref": "#/$defs/ingestion"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending_review", "deduped", "rejected", "selected"]
+    },
+    "rejection_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "duplicate_event",
+        "duplicate_viewpoint",
+        "no_new_delta",
+        "low_confidence",
+        "low_impact",
+        "pure_marketing",
+        "funding_only",
+        "insufficient_sources",
+        "outside_window",
+        "quota_balance",
+        null
+      ]
+    }
+  },
+  "$defs": {
+    "evidenceClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "source_id", "support_level", "evidence_text"],
+      "properties": {
+        "claim": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 240
+        },
+        "source_id": {
+          "type": "string",
+          "pattern": "^src-[a-z0-9][a-z0-9-]{5,80}$"
+        },
+        "support_level": {
+          "type": "string",
+          "enum": ["direct", "indirect", "conflicting"]
+        },
+        "evidence_text": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 500
+        }
+      }
+    },
+    "dedupKeys": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entities", "action", "object", "date_bucket"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          }
+        },
+        "action": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "object": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "date_bucket": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    },
+    "ingestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_registry_id",
+        "collection_method",
+        "retrieved_at",
+        "content_hash",
+        "parser_version"
+      ],
+      "properties": {
+        "source_registry_id": {
+          "type": "string",
+          "pattern": "^registry-[a-z0-9][a-z0-9-]{4,80}$"
+        },
+        "collection_method": {
+          "type": "string",
+          "enum": ["html_index", "rss", "api", "manual_review"]
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "parser_version": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,40}$"
+        },
+        "raw_snapshot_path": {
+          "type": ["string", "null"],
+          "maxLength": 240
+        }
+      }
+    }
+  }
+}
