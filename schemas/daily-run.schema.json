@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/daily-run.schema.json",
+  "title": "HXP Daily Pipeline Run",
+  "description": "一次端到端日报运行的输入、输出、哈希、校验和审核状态。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "date",
+    "timezone",
+    "generated_at",
+    "mode",
+    "status",
+    "review_status",
+    "publication_allowed",
+    "source_count",
+    "selected_counts",
+    "artifacts",
+    "validations"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_id": {
+      "type": "string",
+      "pattern": "^daily-run-[0-9]{8}$"
+    },
+    "date": {"type": "string", "format": "date"},
+    "timezone": {"type": "string", "const": "Asia/Shanghai"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {
+      "type": "string",
+      "enum": ["fixture", "archived_real_sources", "live"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["generated", "validated", "failed"]
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected"]
+    },
+    "publication_allowed": {"type": "boolean"},
+    "source_count": {"type": "integer", "minimum": 1},
+    "selected_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["new_items", "continuation_items", "rejected_candidates"],
+      "properties": {
+        "new_items": {"type": "integer", "minimum": 0, "maximum": 8},
+        "continuation_items": {"type": "integer", "minimum": 0, "maximum": 2},
+        "rejected_candidates": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_pool",
+        "editorial_scores",
+        "briefing_json",
+        "briefing_markdown",
+        "sources"
+      ],
+      "properties": {
+        "candidate_pool": {"$ref": "#/$defs/artifact"},
+        "editorial_scores": {"$ref": "#/$defs/artifact"},
+        "briefing_json": {"$ref": "#/$defs/artifact"},
+        "briefing_markdown": {"$ref": "#/$defs/artifact"},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/artifact"}
+        }
+      }
+    },
+    "validations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_source_references",
+        "source_schema",
+        "score_schema",
+        "briefing_schema",
+        "artifact_hashes",
+        "public_markdown_safe",
+        "deterministic_outputs"
+      ],
+      "properties": {
+        "candidate_source_references": {"type": "boolean"},
+        "source_schema": {"type": "boolean"},
+        "score_schema": {"type": "boolean"},
+        "briefing_schema": {"type": "boolean"},
+        "artifact_hashes": {"type": "boolean"},
+        "public_markdown_safe": {"type": "boolean"},
+        "deterministic_outputs": {"type": "boolean"}
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 300}
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "byte_size"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 260},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
