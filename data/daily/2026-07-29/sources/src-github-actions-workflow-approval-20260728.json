@@ -1,0 +1,13 @@
+{
+  "source_id": "src-github-actions-workflow-approval-20260728",
+  "title": "GitHub Actions holds potentially malicious workflows for approval",
+  "url": "https://github.blog/changelog/2026-07-28-github-actions-holds-unproven-workflows-for-approval/",
+  "publisher": "GitHub",
+  "source_type": "github",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-28T00:00:00Z",
+  "retrieved_at": "2026-07-29T04:00:00Z",
+  "evidence_summary": "GitHub对被识别为潜在恶意的公共仓库Actions工作流先行暂停，需具有写权限的协作者通过已认证网页会话审核后才能运行。",
+  "verification_status": "verified",
+  "conflicts": []
+}

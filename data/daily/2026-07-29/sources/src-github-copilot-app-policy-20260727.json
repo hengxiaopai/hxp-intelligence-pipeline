@@ -1,0 +1,13 @@
+{
+  "source_id": "src-github-copilot-app-policy-20260727",
+  "title": "Manage GitHub Copilot app access with a dedicated policy",
+  "url": "https://github.blog/changelog/2026-07-27-manage-github-copilot-app-access-with-a-dedicated-policy/",
+  "publisher": "GitHub",
+  "source_type": "github",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-27T00:00:00Z",
+  "retrieved_at": "2026-07-29T04:00:00Z",
+  "evidence_summary": "GitHub Copilot App获得独立于Copilot CLI的企业与组织访问策略，管理员可统一启用、禁用或下放组织决定。",
+  "verification_status": "verified",
+  "conflicts": []
+}

@@ -1,0 +1,13 @@
+{
+  "source_id": "src-github-copilot-managed-settings-20260727",
+  "title": "Enterprise managed settings in the GitHub Copilot app and Copilot cloud agent",
+  "url": "https://github.blog/changelog/2026-07-27-enterprise-managed-settings-now-apply-to-the-github-copilot-app/",
+  "publisher": "GitHub",
+  "source_type": "github",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-27T00:00:00Z",
+  "retrieved_at": "2026-07-29T04:00:00Z",
+  "evidence_summary": "managed-settings.json现可统一约束Copilot App与Cloud Agent，覆盖插件、市场、权限提示绕过和默认模型选择等企业治理项。",
+  "verification_status": "verified",
+  "conflicts": []
+}

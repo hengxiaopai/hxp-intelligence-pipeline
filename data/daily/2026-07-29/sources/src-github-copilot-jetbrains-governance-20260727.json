@@ -1,0 +1,13 @@
+{
+  "source_id": "src-github-copilot-jetbrains-governance-20260727",
+  "title": "GitHub Copilot for JetBrains adds improved OpenTelemetry configuration and model management",
+  "url": "https://github.blog/changelog/2026-07-27-github-copilot-for-jetbrains-adds-improvved-opentelemetry-configuration-and-model-management/",
+  "publisher": "GitHub",
+  "source_type": "github",
+  "authority_level": "tier_1_official",
+  "published_at": "2026-07-27T00:00:00Z",
+  "retrieved_at": "2026-07-29T04:00:00Z",
+  "evidence_summary": "JetBrains插件新增Agent工作流OpenTelemetry导出、BYOK与自定义端点Token上限、内置模型开关、Claude Agent流程中的MCP与自定义Agent，以及AI credits显示。",
+  "verification_status": "verified",
+  "conflicts": []
+}
