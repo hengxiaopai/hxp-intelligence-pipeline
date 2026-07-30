@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/browser-bridge-capability.schema.json",
+  "title": "HXP Local Browser Bridge Capability Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "real_bridge_calls_enabled",
+    "loopback_only",
+    "remote_bridge_allowed",
+    "bridges",
+    "global_rules"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "real_bridge_calls_enabled": {"type": "boolean", "const": false},
+    "loopback_only": {"type": "boolean", "const": true},
+    "remote_bridge_allowed": {"type": "boolean", "const": false},
+    "bridges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/bridge"}
+    },
+    "global_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "real_platform_write_forbidden",
+        "remote_bind_forbidden",
+        "plaintext_remote_token_forbidden",
+        "cookie_storage_forbidden",
+        "browser_profile_storage_forbidden",
+        "qr_code_storage_forbidden",
+        "private_raw_response_storage_forbidden",
+        "captcha_or_risk_control_hard_block",
+        "identity_mismatch_hard_block",
+        "unknown_error_hard_block",
+        "public_publish_requires_new_confirmation"
+      ],
+      "properties": {
+        "real_platform_write_forbidden": {"type": "boolean", "const": true},
+        "remote_bind_forbidden": {"type": "boolean", "const": true},
+        "plaintext_remote_token_forbidden": {"type": "boolean", "const": true},
+        "cookie_storage_forbidden": {"type": "boolean", "const": true},
+        "browser_profile_storage_forbidden": {"type": "boolean", "const": true},
+        "qr_code_storage_forbidden": {"type": "boolean", "const": true},
+        "private_raw_response_storage_forbidden": {"type": "boolean", "const": true},
+        "captcha_or_risk_control_hard_block": {"type": "boolean", "const": true},
+        "identity_mismatch_hard_block": {"type": "boolean", "const": true},
+        "unknown_error_hard_block": {"type": "boolean", "const": true},
+        "public_publish_requires_new_confirmation": {"type": "boolean", "const": true}
+      }
+    }
+  },
+  "$defs": {
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "branch", "cli_package", "mcp_package"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "branch": {"type": "string", "minLength": 1, "maxLength": 120},
+        "cli_package": {"type": "string", "minLength": 1, "maxLength": 120},
+        "mcp_package": {"type": "string", "minLength": 1, "maxLength": 120}
+      }
+    },
+    "bridge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bridge_id",
+        "provider",
+        "mode",
+        "enabled",
+        "execution_enabled",
+        "transport",
+        "host",
+        "websocket_port",
+        "http_status_port",
+        "credential_environment_variables",
+        "credential_values_persisted",
+        "allowed_operations",
+        "allowed_actions",
+        "supported_platforms",
+        "structured_results_required",
+        "cli_exit_code_authoritative",
+        "public_publish_supported",
+        "draft_update_supported",
+        "status_lookup_supported",
+        "upstream_reference"
+      ],
+      "properties": {
+        "bridge_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+        "provider": {"type": "string", "enum": ["wechatsync", "multipost", "xiaohongshu_mcp", "opencli", "manual_handoff"]},
+        "mode": {"type": "string", "enum": ["local_mcp", "local_cli", "browser_extension", "manual_handoff"]},
+        "enabled": {"type": "boolean", "const": false},
+        "execution_enabled": {"type": "boolean", "const": false},
+        "transport": {"type": "string", "enum": ["stdio_to_local_websocket", "local_process", "browser_extension", "manual"]},
+        "host": {"type": "string", "enum": ["127.0.0.1", "localhost", "::1"]},
+        "websocket_port": {"type": "integer", "minimum": 1024, "maximum": 65535},
+        "http_status_port": {"type": "integer", "minimum": 1024, "maximum": 65535},
+        "credential_environment_variables": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,100}$"}
+        },
+        "credential_values_persisted": {"type": "boolean", "const": false},
+        "allowed_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "enum": ["list_platforms", "check_auth", "preview_draft", "create_draft"]}
+        },
+        "allowed_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "const": "draft_only"}
+        },
+        "supported_platforms": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "enum": ["zhihu", "juejin", "csdn"]}
+        },
+        "structured_results_required": {"type": "boolean"},
+        "cli_exit_code_authoritative": {"type": "boolean", "const": false},
+        "public_publish_supported": {"type": "boolean", "const": false},
+        "draft_update_supported": {"type": "boolean"},
+        "status_lookup_supported": {"type": "boolean"},
+        "upstream_reference": {"$ref": "#/$defs/upstream"}
+      }
+    }
+  }
+}
