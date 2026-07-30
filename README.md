@@ -11,7 +11,8 @@
 3. **人工批准**：自动校验通过后仍保持待审核，批准后才能推进历史、视觉和发布准备。
 4. **视觉与归档**：AI 生成无文字主视觉，固定模板排版中文并导出多平台资产。
 5. **内容适配**：为微信公众号、小红书、抖音图文、X 和网站生成独立草稿内容包。
-6. **连接器安全层**：授权绑定平台、账号、文案哈希、图片哈希、顺序、动作和有效期；当前只启用离线 Simulator。
+6. **无扩展发布驾驶舱**：集中复制文案、下载有序图片、打开官方创作入口，并由用户手动记录结果。
+7. **连接器安全层**：官方连接器仍需绑定平台、账号、文案哈希、图片哈希、顺序、动作和有效期。
 
 ## 核心原则
 
@@ -23,6 +24,7 @@
 - 仓库不保存或分发字体文件；正式 Logo 必须使用主理人批准的品牌资产。
 - 实时采集、平台凭据、真实草稿写入和公开发布全部默认关闭。
 - 不绕过验证码、风控、平台协议、登录限制或人工确认。
+- 浏览器扩展和本地桥接只作为可选增强，不是主流程前置条件。
 
 ## 快速验证
 
@@ -140,7 +142,62 @@ Phase 5.1 结果始终保持：
 
 完整规范见 [`docs/PUBLISHING.md`](docs/PUBLISHING.md)。
 
-## 连接器授权与Simulator
+## 无扩展发布驾驶舱
+
+驾驶舱不安装浏览器扩展，不读取 Cookie，不使用 Playwright、CDP 或 DOM 注入。它把现有五个平台内容包扩展为六个平台交接目录，并从网站长文确定性派生知乎文章版和回答版。
+
+```text
+validated content packages
+  ↓
+六平台交接目录
+  ├── 微信公众号
+  ├── 小红书
+  ├── 抖音图文
+  ├── X
+  ├── 珩小派网站
+  └── 知乎文章版 / 回答版
+  ↓
+单文件离线 cockpit.html
+  ├── 用户点击后复制标题、正文、话题和线程
+  ├── 查看图片顺序、尺寸和 SHA-256
+  ├── 下载 JSON / Markdown / 纯文本
+  ├── 打开白名单 HTTPS 官方创作入口
+  └── 人工记录已打开、已粘贴、已存草稿或已发布
+```
+
+构建交接包：
+
+```bash
+python scripts/build_handoff_bundle.py \
+  --packages /path/to/content-packages.json \
+  --output-dir /path/to/handoff \
+  --manifest /path/to/handoff/manifest.json \
+  --generated-at 2026-07-30T13:00:00+08:00
+```
+
+生成离线驾驶舱：
+
+```bash
+python scripts/build_publishing_cockpit.py \
+  --manifest /path/to/handoff/manifest.json \
+  --output /path/to/handoff/cockpit.html
+```
+
+初始化人工状态记录：
+
+```bash
+python scripts/record_manual_publication.py \
+  --manifest /path/to/handoff/manifest.json \
+  --updated-at 2026-07-30T13:10:00+08:00 \
+  --session-slug owner \
+  --output /path/to/handoff/session.json
+```
+
+程序不会根据打开页面、复制内容或进程退出码推断发布成功。任何已发布状态必须由用户明确确认，并填写平台内容 ID 或 HTTPS 链接；内容或图片哈希发生变化后，旧状态不能复用。
+
+完整规范见 [`docs/PUBLISHING-COCKPIT.md`](docs/PUBLISHING-COCKPIT.md)。
+
+## 连接器授权与 Simulator
 
 当前仅启用：
 
@@ -151,7 +208,7 @@ mode=simulator
 action=draft_only
 ```
 
-真实网站、微信公众号和人工交接连接器均已登记但保持关闭。
+真实网站、微信公众号和其他平台连接器均已登记或规划，但保持关闭。
 
 ```bash
 python scripts/inspect_connector_capabilities.py
@@ -194,10 +251,12 @@ python scripts/simulate_connector_write.py \
 - `Visual Generation Validation`
 - `Multi-platform Export Validation`
 - `Publication Package Validation`
+- `Publishing Cockpit Validation`
 - `Connector Gate Validation`
+- `Local Browser Bridge Validation`
 - `HXP Daily Pipeline Plan`
 
-CI 不调用付费图片 API，不访问真实发布平台，不读取真实平台凭据。视觉验证使用带测试标识的 Logo 和离线 Fixture。
+CI 不调用付费图片 API，不访问真实发布平台，不读取真实平台凭据。视觉与发布验证均使用明确标记的离线 Fixture。
 
 ## 首份端到端归档
 
@@ -226,4 +285,6 @@ CI 不调用付费图片 API，不访问真实发布平台，不读取真实平�
 - Phase 4.2：AI 主视觉、人工审核、定向重试与多平台导出 ✅
 - Phase 5.1：五平台内容包、发布计划与无写入人工确认 ✅
 - Phase 5.2A：连接器能力、一次性授权、幂等账本与离线 Simulator ✅
-- Phase 5.2B：首个真实草稿连接器，等待主理人指定平台与授权范围 ⏳
+- Phase 5.3A：本地浏览器桥接协议与离线验证，可选增强 ✅
+- Phase 5.3B：无扩展发布驾驶舱与知乎人工交接包 🚧
+- Phase 5.4：网站 / Halo、微信公众号、抖音、小红书官方能力连接器 ⏳
