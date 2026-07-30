@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hengxiaopai.com/schemas/content-package.schema.json",
   "title": "HXP Multi-platform Content Package Batch",
-  "description": "由已批准简报和已验证多平台视觉资产生成的草稿内容包。Phase 5.1 不执行任何平台写入。",
+  "description": "由已批准简报和已验证多平台视觉资产生成的草稿内容包。当前阶段不执行任何平台写入。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -28,8 +28,8 @@
     "write_actions_enabled": {"type": "boolean", "const": false},
     "packages": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 6,
+      "maxItems": 6,
       "items": {"$ref": "#/$defs/package"}
     },
     "summary": {
@@ -43,13 +43,14 @@
         "platform_counts": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["wechat", "xiaohongshu", "douyin", "x", "website"],
+          "required": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"],
           "properties": {
             "wechat": {"type": "integer", "minimum": 0},
             "xiaohongshu": {"type": "integer", "minimum": 0},
             "douyin": {"type": "integer", "minimum": 0},
             "x": {"type": "integer", "minimum": 0},
-            "website": {"type": "integer", "minimum": 0}
+            "website": {"type": "integer", "minimum": 0},
+            "zhihu": {"type": "integer", "minimum": 0}
           }
         }
       }
@@ -87,7 +88,9 @@
         "seo_description",
         "slug",
         "source_labels",
-        "risk_disclaimer"
+        "risk_disclaimer",
+        "answer_question_placeholder",
+        "answer_markdown"
       ],
       "properties": {
         "title": {"type": "string", "maxLength": 100},
@@ -114,7 +117,9 @@
           "uniqueItems": true,
           "items": {"type": "string", "maxLength": 120}
         },
-        "risk_disclaimer": {"type": ["string", "null"], "maxLength": 300}
+        "risk_disclaimer": {"type": ["string", "null"], "maxLength": 300},
+        "answer_question_placeholder": {"type": ["string", "null"], "maxLength": 300},
+        "answer_markdown": {"type": "string", "maxLength": 30000}
       }
     },
     "package": {
@@ -134,9 +139,9 @@
       "properties": {
         "package_id": {
           "type": "string",
-          "pattern": "^content-package-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+          "pattern": "^content-package-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website|zhihu)$"
         },
-        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]},
         "status": {"type": "string", "enum": ["draft", "validated", "blocked"]},
         "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "content": {"$ref": "#/$defs/content"},
