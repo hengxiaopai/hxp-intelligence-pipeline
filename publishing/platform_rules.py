@@ -43,6 +43,8 @@ RISK_MAP = {
     "platform_review": "platform_review",
 }
 
+PLATFORMS = {"wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"}
+
 
 def canonical_hash(value: Any) -> str:
     body = json.dumps(
@@ -118,11 +120,10 @@ def profile_map(profiles: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
         if platform in result:
             raise ValueError(f"平台配置重复：{platform}")
         result[platform] = profile
-    expected = {"wechat", "xiaohongshu", "douyin", "x", "website"}
-    if set(result) != expected:
-        raise ValueError(f"平台配置必须完整覆盖：{sorted(expected)}")
+    if set(result) != PLATFORMS:
+        raise ValueError(f"平台配置必须完整覆盖：{sorted(PLATFORMS)}")
     if profiles.get("write_actions_enabled") is not False:
-        raise ValueError("Phase 5.1 必须保持 write_actions_enabled=false")
+        raise ValueError("发布准备必须保持 write_actions_enabled=false")
     return result
 
 
@@ -153,16 +154,16 @@ def validate_platform_package(
         else content.get("body_markdown", "")
     )
     length_ok = all(
-        (
-            limit <= 0
-            or display_units(str(value)) <= limit
-        )
+        limit <= 0 or display_units(str(value)) <= limit
         for value, limit in (
             (content.get("title", ""), title_limit),
             (content.get("summary", ""), summary_limit),
             (body_value, body_limit),
         )
     )
+    if platform == "zhihu":
+        length_ok = length_ok and display_units(str(content.get("answer_markdown", ""))) <= body_limit
+
     collection_limits_ok = (
         len(content.get("hashtags", [])) <= int(profile.get("hashtags_max_items", 0))
         and len(content.get("thread", [])) <= int(profile.get("thread_max_items", 0))
@@ -187,6 +188,8 @@ def validate_platform_package(
             str(content.get("summary", "")),
             str(content.get("body_markdown", "")),
             str(content.get("caption", "")),
+            str(content.get("answer_question_placeholder", "")),
+            str(content.get("answer_markdown", "")),
             *[str(value) for value in content.get("thread", [])],
         ]
     )
