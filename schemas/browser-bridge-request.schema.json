@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/browser-bridge-request.schema.json",
+  "title": "HXP Local Browser Bridge Request",
+  "description": "只描述待执行或离线验证的本地浏览器桥接操作；Phase 5.3A 固定 execution_allowed=false。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bridge_request_id",
+    "request_fingerprint",
+    "bridge_id",
+    "provider",
+    "operation",
+    "action",
+    "created_at",
+    "platforms",
+    "account_ref",
+    "transport",
+    "upstream_call",
+    "article",
+    "execution_allowed",
+    "external_write_expected",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "bridge_request_id": {"type": "string", "pattern": "^bridge-request-[a-f0-9]{32,64}$"},
+    "request_fingerprint": {"type": "string", "pattern": "^bridge-[a-f0-9]{32,64}$"},
+    "bridge_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+    "provider": {"type": "string", "enum": ["wechatsync"]},
+    "operation": {"type": "string", "enum": ["list_platforms", "check_auth", "preview_draft", "create_draft"]},
+    "action": {"type": "string", "const": "draft_only"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "enum": ["zhihu", "juejin", "csdn"]}
+    },
+    "account_ref": {"type": ["string", "null"], "maxLength": 160},
+    "transport": {"type": "string", "enum": ["mcp_tool", "cli_dry_run", "fixture"]},
+    "upstream_call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "arguments", "command_preview"],
+      "properties": {
+        "name": {"type": "string", "enum": ["list_platforms", "check_auth", "sync_article", "wechatsync sync --dry-run"]},
+        "arguments": {"type": "object"},
+        "command_preview": {
+          "type": ["array", "null"],
+          "items": {"type": "string", "maxLength": 500}
+        }
+      }
+    },
+    "article": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/article"}
+      ]
+    },
+    "execution_allowed": {"type": "boolean", "const": false},
+    "external_write_expected": {"type": "boolean", "const": false},
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "loopback_only",
+        "remote_bridge_allowed",
+        "credential_values_persisted",
+        "cli_exit_code_authoritative",
+        "public_publish_allowed",
+        "captcha_or_risk_control_policy"
+      ],
+      "properties": {
+        "loopback_only": {"type": "boolean", "const": true},
+        "remote_bridge_allowed": {"type": "boolean", "const": false},
+        "credential_values_persisted": {"type": "boolean", "const": false},
+        "cli_exit_code_authoritative": {"type": "boolean", "const": false},
+        "public_publish_allowed": {"type": "boolean", "const": false},
+        "captcha_or_risk_control_policy": {"type": "string", "const": "hard_block"}
+      }
+    }
+  },
+  "$defs": {
+    "article": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "article_id",
+        "title",
+        "markdown_path",
+        "content_hash",
+        "asset_hashes",
+        "cover_path",
+        "source_labels"
+      ],
+      "properties": {
+        "article_id": {"type": "string", "pattern": "^article-[0-9]{8}-[a-z0-9-]{3,80}$"},
+        "title": {"type": "string", "minLength": 2, "maxLength": 100},
+        "markdown_path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "asset_hashes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        },
+        "cover_path": {"type": ["string", "null"], "maxLength": 500},
+        "source_labels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "maxLength": 120}
+        }
+      }
+    }
+  }
+}
