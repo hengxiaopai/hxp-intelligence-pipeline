@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "real_bridge_calls_enabled": false,
+  "loopback_only": true,
+  "remote_bridge_allowed": false,
+  "bridges": [
+    {
+      "bridge_id": "wechatsync-mcp",
+      "provider": "wechatsync",
+      "mode": "local_mcp",
+      "enabled": false,
+      "execution_enabled": false,
+      "transport": "stdio_to_local_websocket",
+      "host": "127.0.0.1",
+      "websocket_port": 9527,
+      "http_status_port": 9528,
+      "credential_environment_variables": ["WECHATSYNC_TOKEN"],
+      "credential_values_persisted": false,
+      "allowed_operations": ["list_platforms", "check_auth", "create_draft"],
+      "allowed_actions": ["draft_only"],
+      "supported_platforms": ["zhihu", "juejin", "csdn"],
+      "structured_results_required": true,
+      "cli_exit_code_authoritative": false,
+      "public_publish_supported": false,
+      "draft_update_supported": false,
+      "status_lookup_supported": true,
+      "upstream_reference": {
+        "repository": "wechatsync/Wechatsync",
+        "branch": "v2",
+        "cli_package": "@wechatsync/cli",
+        "mcp_package": "@wechatsync/mcp-server"
+      }
+    },
+    {
+      "bridge_id": "wechatsync-cli-preview",
+      "provider": "wechatsync",
+      "mode": "local_cli",
+      "enabled": false,
+      "execution_enabled": false,
+      "transport": "local_process",
+      "host": "127.0.0.1",
+      "websocket_port": 9527,
+      "http_status_port": 9528,
+      "credential_environment_variables": ["WECHATSYNC_TOKEN"],
+      "credential_values_persisted": false,
+      "allowed_operations": ["preview_draft"],
+      "allowed_actions": ["draft_only"],
+      "supported_platforms": ["zhihu", "juejin", "csdn"],
+      "structured_results_required": false,
+      "cli_exit_code_authoritative": false,
+      "public_publish_supported": false,
+      "draft_update_supported": false,
+      "status_lookup_supported": false,
+      "upstream_reference": {
+        "repository": "wechatsync/Wechatsync",
+        "branch": "v2",
+        "cli_package": "@wechatsync/cli",
+        "mcp_package": "@wechatsync/mcp-server"
+      }
+    }
+  ],
+  "global_rules": {
+    "real_platform_write_forbidden": true,
+    "remote_bind_forbidden": true,
+    "plaintext_remote_token_forbidden": true,
+    "cookie_storage_forbidden": true,
+    "browser_profile_storage_forbidden": true,
+    "qr_code_storage_forbidden": true,
+    "private_raw_response_storage_forbidden": true,
+    "captcha_or_risk_control_hard_block": true,
+    "identity_mismatch_hard_block": true,
+    "unknown_error_hard_block": true,
+    "public_publish_requires_new_confirmation": true
+  }
+}

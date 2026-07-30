@@ -1,0 +1,28 @@
+{
+  "platforms": [
+    {
+      "id": "zhihu",
+      "name": "知乎",
+      "isAuthenticated": true,
+      "username": "hxp-zhihu-fixture"
+    },
+    {
+      "id": "juejin",
+      "name": "掘金",
+      "isAuthenticated": true,
+      "username": "hxp-juejin-fixture"
+    },
+    {
+      "id": "csdn",
+      "name": "CSDN",
+      "isAuthenticated": false,
+      "username": null
+    },
+    {
+      "id": "toutiao",
+      "name": "头条号",
+      "isAuthenticated": true,
+      "username": "ignored-platform"
+    }
+  ]
+}

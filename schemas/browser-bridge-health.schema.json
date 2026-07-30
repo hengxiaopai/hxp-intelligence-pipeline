@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/browser-bridge-health.schema.json",
+  "title": "HXP Local Browser Bridge Health Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "health_id",
+    "bridge_id",
+    "provider",
+    "checked_at",
+    "mode",
+    "status",
+    "loopback_verified",
+    "remote_endpoint_detected",
+    "extension_connected",
+    "credential_present",
+    "platforms",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "health_id": {"type": "string", "pattern": "^bridge-health-[a-f0-9]{32,64}$"},
+    "bridge_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+    "provider": {"type": "string", "enum": ["wechatsync"]},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "mode": {"type": "string", "enum": ["fixture", "offline_parse", "read_only_live"]},
+    "status": {"type": "string", "enum": ["ready", "degraded", "blocked", "unavailable"]},
+    "loopback_verified": {"type": "boolean"},
+    "remote_endpoint_detected": {"type": "boolean", "const": false},
+    "extension_connected": {"type": ["boolean", "null"]},
+    "credential_present": {
+      "type": ["boolean", "null"],
+      "description": "只记录环境变量是否存在，不记录凭据值。"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/platform"}
+    },
+    "errors": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/error"}
+    }
+  },
+  "$defs": {
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "display_name", "auth_status", "account_ref", "reason"],
+      "properties": {
+        "platform": {"type": "string", "enum": ["zhihu", "juejin", "csdn"]},
+        "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "auth_status": {"type": "string", "enum": ["authenticated", "unauthenticated", "unknown", "blocked"]},
+        "account_ref": {"type": ["string", "null"], "maxLength": 160},
+        "reason": {"type": ["string", "null"], "maxLength": 300}
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "classification", "message", "recoverable"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,80}$"},
+        "classification": {"type": "string", "enum": ["configuration", "authentication", "identity", "risk_control", "transport", "upstream", "unknown"]},
+        "message": {"type": "string", "minLength": 3, "maxLength": 500},
+        "recoverable": {"type": "boolean"}
+      }
+    }
+  }
+}
