@@ -1,0 +1,165 @@
+name: Halo Draft Adapter Validation
+
+on:
+  pull_request:
+    paths:
+      - "config/halo-draft-policy.json"
+      - "schemas/halo-draft-execution.schema.json"
+      - "schemas/halo-live-authorization.schema.json"
+      - "publishing/halo_draft.py"
+      - "publishing/halo_mock.py"
+      - "publishing/__init__.py"
+      - "scripts/build_halo_draft_payload.py"
+      - "scripts/simulate_halo_draft.py"
+      - "scripts/issue_halo_live_authorization.py"
+      - "tests/test_halo_draft_adapter.py"
+      - "docs/HALO-DRAFT-CONNECTOR.md"
+      - ".github/workflows/halo-draft-adapter-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-halo-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile Halo adapter code
+        run: >-
+          python -m py_compile
+          publishing/halo_draft.py
+          publishing/halo_mock.py
+          scripts/build_halo_draft_payload.py
+          scripts/simulate_halo_draft.py
+          scripts/issue_halo_live_authorization.py
+          tests/test_halo_draft_adapter.py
+
+      - name: Run Halo adapter unit tests
+        run: python -m unittest tests.test_halo_draft_adapter -v
+
+      - name: Generate official Halo request fixture
+        run: |
+          rm -rf /tmp/hxp-halo
+          python scripts/generate_cockpit_fixture.py --output-root /tmp/hxp-halo
+          python scripts/build_publication_plan.py \
+            --packages /tmp/hxp-halo/content-packages.json \
+            --created-at 2026-07-30T15:00:00+08:00 \
+            --output /tmp/hxp-halo/publication-plan.json
+          python scripts/inspect_official_connector_qualifications.py \
+            --facts data/examples/official-qualification-facts.simulated.json \
+            --generated-at 2026-07-30T15:00:00+08:00 \
+            --report-slug halo-ci \
+            --output /tmp/hxp-halo/qualification-report.json
+          python scripts/build_official_connector_request.py \
+            --qualification-report /tmp/hxp-halo/qualification-report.json \
+            --connector-id halo-official-draft \
+            --packages /tmp/hxp-halo/content-packages.json \
+            --plan /tmp/hxp-halo/publication-plan.json \
+            --material-mapping data/examples/material-mapping.simulated.json \
+            --generated-at 2026-07-30T15:10:00+08:00 \
+            --expires-at 2026-07-30T16:10:00+08:00 \
+            --output /tmp/hxp-halo/official-request.json
+
+      - name: Build non-executable Halo payload
+        run: |
+          python scripts/build_halo_draft_payload.py \
+            --official-request /tmp/hxp-halo/official-request.json \
+            --packages /tmp/hxp-halo/content-packages.json \
+            --output /tmp/hxp-halo/halo-draft-payload.json
+
+      - name: Simulate create and idempotent replay
+        run: |
+          python scripts/simulate_halo_draft.py \
+            --payload /tmp/hxp-halo/halo-draft-payload.json \
+            --executed-at 2026-07-30T15:20:00+08:00 \
+            --result-output /tmp/hxp-halo/halo-mock-result.json \
+            --ledger-output /tmp/hxp-halo/halo-mock-ledger.json
+          python scripts/simulate_halo_draft.py \
+            --payload /tmp/hxp-halo/halo-draft-payload.json \
+            --ledger /tmp/hxp-halo/halo-mock-ledger.json \
+            --executed-at 2026-07-30T15:21:00+08:00 \
+            --result-output /tmp/hxp-halo/halo-mock-replay.json \
+            --ledger-output /tmp/hxp-halo/halo-mock-ledger.next.json
+          python scripts/validate.py \
+            --schema schemas/halo-draft-execution.schema.json \
+            --data /tmp/hxp-halo/halo-mock-result.json
+          python scripts/validate.py \
+            --schema schemas/halo-draft-execution.schema.json \
+            --data /tmp/hxp-halo/halo-mock-replay.json
+
+      - name: Issue non-secret draft-only authorization record
+        run: |
+          python scripts/issue_halo_live_authorization.py \
+            --official-request /tmp/hxp-halo/official-request.json \
+            --site-origin https://halo.example.invalid \
+            --site-fingerprint site-dddddddddddddddddddddddddddddddddddddddddddddddd \
+            --halo-version 2.21.0 \
+            --account-ref hxp-halo-ci \
+            --issued-at 2026-07-30T15:30:00+08:00 \
+            --expires-at 2026-07-30T16:30:00+08:00 \
+            --issued-by hxp-ci \
+            --confirm-draft-only \
+            --output /tmp/hxp-halo/halo-live-authorization.json
+          python scripts/validate.py \
+            --schema schemas/halo-live-authorization.schema.json \
+            --data /tmp/hxp-halo/halo-live-authorization.json
+
+      - name: Verify no-write and no-secret invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('/tmp/hxp-halo')
+          payload = json.loads((root / 'halo-draft-payload.json').read_text(encoding='utf-8'))
+          first = json.loads((root / 'halo-mock-result.json').read_text(encoding='utf-8'))
+          replay = json.loads((root / 'halo-mock-replay.json').read_text(encoding='utf-8'))
+          ledger = json.loads((root / 'halo-mock-ledger.next.json').read_text(encoding='utf-8'))
+          authorization = json.loads((root / 'halo-live-authorization.json').read_text(encoding='utf-8'))
+          assert payload['execution_enabled'] is False
+          assert payload['external_write_performed'] is False
+          assert payload['post']['spec']['publish'] is False
+          assert first['result']['status'] == 'simulated'
+          assert replay['result']['status'] == 'replayed'
+          assert first['result']['draft_name'] == replay['result']['draft_name']
+          assert ledger['network_listener_enabled'] is False
+          assert ledger['external_write_performed'] is False
+          assert authorization['publish_allowed'] is False
+          assert authorization['credential_environment_variable'] == 'HXP_HALO_PAT'
+          for path in root.glob('*.json'):
+              text = path.read_text(encoding='utf-8').casefold()
+              assert 'bearer ' not in text
+              assert 'authorization:' not in text
+              assert 'cookie=' not in text
+          PY
+
+      - name: Upload Halo draft audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-halo-draft-audit-2026-07-30
+          path: |
+            /tmp/hxp-halo/official-request.json
+            /tmp/hxp-halo/halo-draft-payload.json
+            /tmp/hxp-halo/halo-mock-result.json
+            /tmp/hxp-halo/halo-mock-replay.json
+            /tmp/hxp-halo/halo-mock-ledger.next.json
+            /tmp/hxp-halo/halo-live-authorization.json
+          if-no-files-found: error
+          retention-days: 7
