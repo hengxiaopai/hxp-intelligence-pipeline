@@ -98,7 +98,7 @@ jobs:
           python scripts/record_manual_publication.py \
             --manifest /tmp/hxp-cockpit/handoff/manifest.json \
             --updated-at 2026-07-30T13:10:00+08:00 \
-            --session-slug ci \
+            --session-slug ci-run \
             --output /tmp/hxp-cockpit/handoff/session.json
           python scripts/record_manual_publication.py \
             --manifest /tmp/hxp-cockpit/handoff/manifest.json \
