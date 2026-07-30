@@ -150,7 +150,7 @@ jobs:
           python scripts/validate_platform_exports.py \
             --manifest /tmp/hxp-publish/export-manifest.json
 
-      - name: Build five platform content packages and plan
+      - name: Build six platform content packages and plan
         run: |
           python scripts/build_content_packages.py \
             --run-dir /tmp/hxp-publish-run \
@@ -206,7 +206,7 @@ jobs:
             --schema schemas/publication-approval.schema.json \
             --data /tmp/hxp-publish/publication-approval.json
 
-      - name: Render five offline publication previews
+      - name: Render six offline publication previews
         run: |
           python scripts/preview_publication.py \
             --packages /tmp/hxp-publish/content-packages.json \
@@ -218,8 +218,9 @@ jobs:
           python scripts/validate.py \
             --schema schemas/publication-result.schema.json \
             --data /tmp/hxp-publish/publication-result.json
-          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.html' | wc -l)" -eq 5
-          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.md' | wc -l)" -eq 5
+          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.html' | wc -l)" -eq 6
+          test "$(find /tmp/hxp-publish/preview -maxdepth 1 -name '*.md' | wc -l)" -eq 6
+          grep -q "知乎回答版" /tmp/hxp-publish/preview/zhihu.md
           python - <<'PY'
           import json
           from pathlib import Path
@@ -227,7 +228,7 @@ jobs:
           plan = json.loads(Path('/tmp/hxp-publish/publication-plan.approved.json').read_text(encoding='utf-8'))
           assert result['execution_mode'] == 'dry_run'
           assert result['external_write_performed'] is False
-          assert result['summary'] == {'total': 5, 'previewed': 5, 'blocked': 0, 'failed': 0}
+          assert result['summary'] == {'total': 6, 'previewed': 6, 'blocked': 0, 'failed': 0}
           assert plan['write_actions_enabled'] is False
           assert all(entry['write_allowed'] is False for entry in plan['entries'])
           PY
