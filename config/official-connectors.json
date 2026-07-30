@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "execution_enabled": false,
+  "external_write_performed": false,
+  "connectors": [
+    {
+      "connector_id": "halo-official-draft",
+      "platform": "website",
+      "display_name": "Halo 官方草稿接口",
+      "integration_type": "server_api",
+      "action": "draft_only",
+      "enabled": false,
+      "official_base_origins": ["https://api.halo.run"],
+      "documentation_urls": ["https://api.halo.run/"],
+      "credential_environment_variables": ["HXP_HALO_BASE_URL", "HXP_HALO_PAT"],
+      "required_facts": ["site_base_url", "halo_version", "account_ref", "token_scope_verified"],
+      "required_capabilities": ["create_post", "update_post_content", "status_lookup"],
+      "asset_requirements": ["cover_asset_verified", "body_assets_verified"],
+      "supports_draft": true,
+      "supports_status_lookup": true,
+      "supports_update": true,
+      "supports_public_publish": false,
+      "notes": "只构造创建文章与写入正文的草稿计划；publish endpoint不在Phase 5.4A范围。"
+    },
+    {
+      "connector_id": "wechat-official-draft",
+      "platform": "wechat",
+      "display_name": "微信公众号官方草稿箱",
+      "integration_type": "server_api",
+      "action": "draft_only",
+      "enabled": false,
+      "official_base_origins": ["https://api.weixin.qq.com"],
+      "documentation_urls": ["https://developers.weixin.qq.com/doc/offiaccount/Draft_Box/Add_draft.html"],
+      "credential_environment_variables": ["HXP_WECHAT_APP_ID", "HXP_WECHAT_APP_SECRET"],
+      "required_facts": ["account_ref", "account_type", "developer_mode_enabled", "ip_allowlist_verified"],
+      "required_capabilities": ["access_token_server_side", "draft_add", "material_upload"],
+      "asset_requirements": ["thumb_media_id_mapped", "body_images_uploaded"],
+      "supports_draft": true,
+      "supports_status_lookup": true,
+      "supports_update": true,
+      "supports_public_publish": false,
+      "notes": "只构造新增草稿请求；不获取access_token、不上传素材、不群发。"
+    },
+    {
+      "connector_id": "douyin-official-image-text",
+      "platform": "douyin",
+      "display_name": "抖音官方图文发布能力",
+      "integration_type": "oauth_api",
+      "action": "connector_publish",
+      "enabled": false,
+      "official_base_origins": ["https://open.douyin.com"],
+      "documentation_urls": [
+        "https://open.douyin.com/platform/resource/docs/openapi/video-management/douyin/publish-img/upload/",
+        "https://open.douyin.com/platform/resource/docs/openapi/video-management/douyin/publish-img/publish/"
+      ],
+      "credential_environment_variables": ["HXP_DOUYIN_CLIENT_KEY", "HXP_DOUYIN_CLIENT_SECRET"],
+      "required_facts": ["application_ref", "oauth_redirect_uri", "user_authorization_ref", "scope_video_create_approved"],
+      "required_capabilities": ["oauth_authorization_code", "image_upload", "image_text_create"],
+      "asset_requirements": ["image_count_1_to_30", "each_image_max_20mb", "ordered_assets_verified"],
+      "supports_draft": false,
+      "supports_status_lookup": true,
+      "supports_update": false,
+      "supports_public_publish": false,
+      "notes": "Phase 5.4A只生成OAuth前置检查与无Token请求计划；最终提交需要新的用户可感知确认。"
+    },
+    {
+      "connector_id": "xiaohongshu-official-share",
+      "platform": "xiaohongshu",
+      "display_name": "小红书官方分享开放平台",
+      "integration_type": "client_share_sdk",
+      "action": "manual_publish",
+      "enabled": false,
+      "official_base_origins": ["https://agora.xiaohongshu.com"],
+      "documentation_urls": [
+        "https://agora.xiaohongshu.com/doc",
+        "https://agora.xiaohongshu.com/doc/qa"
+      ],
+      "credential_environment_variables": ["HXP_XHS_APP_KEY"],
+      "required_facts": ["application_ref", "application_platform", "platform_review_approved", "app_key_reference"],
+      "required_capabilities": ["share_sdk_registered", "xhs_app_installed", "share_callback_supported"],
+      "asset_requirements": ["image_count_1_to_18", "ordered_assets_verified", "mobile_transfer_ready"],
+      "supports_draft": false,
+      "supports_status_lookup": false,
+      "supports_update": false,
+      "supports_public_publish": false,
+      "notes": "官方能力用于客户端唤起小红书发布工具；标题和正文自动填充存在限制，不视为服务端静默发布。"
+    }
+  ],
+  "global_rules": {
+    "credentials_in_repository_forbidden": true,
+    "credential_values_in_reports_forbidden": true,
+    "authorization_headers_forbidden": true,
+    "cookies_forbidden": true,
+    "http_origins_forbidden": true,
+    "non_official_fallback_forbidden": true,
+    "execution_requires_separate_authorization": true,
+    "public_publish_forbidden": true,
+    "external_write_performed": false
+  }
+}

@@ -1,0 +1,140 @@
+name: Official Connector Qualification
+
+on:
+  pull_request:
+    paths:
+      - "config/official-connectors.json"
+      - "schemas/connector-qualification.schema.json"
+      - "schemas/official-connector-request.schema.json"
+      - "publishing/qualification.py"
+      - "publishing/official_request.py"
+      - "publishing/__init__.py"
+      - "scripts/inspect_official_connector_qualifications.py"
+      - "scripts/build_official_connector_request.py"
+      - "data/examples/official-qualification-facts.simulated.json"
+      - "data/examples/material-mapping.simulated.json"
+      - "tests/test_official_connector_qualifications.py"
+      - "docs/OFFICIAL-CONNECTORS.md"
+      - ".github/workflows/official-connector-qualification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile official connector code
+        run: >-
+          python -m py_compile
+          publishing/__init__.py
+          publishing/qualification.py
+          publishing/official_request.py
+          scripts/inspect_official_connector_qualifications.py
+          scripts/build_official_connector_request.py
+          tests/test_official_connector_qualifications.py
+
+      - name: Run official connector unit tests
+        run: python -m unittest tests.test_official_connector_qualifications -v
+
+      - name: Generate six-platform package and plan fixture
+        run: |
+          rm -rf /tmp/hxp-official
+          python scripts/generate_cockpit_fixture.py --output-root /tmp/hxp-official
+          python scripts/build_publication_plan.py \
+            --packages /tmp/hxp-official/content-packages.json \
+            --created-at 2026-07-30T15:00:00+08:00 \
+            --output /tmp/hxp-official/publication-plan.json
+
+      - name: Generate simulated qualification report
+        run: |
+          python scripts/inspect_official_connector_qualifications.py \
+            --facts data/examples/official-qualification-facts.simulated.json \
+            --generated-at 2026-07-30T15:00:00+08:00 \
+            --report-slug ci-audit \
+            --output /tmp/hxp-official/qualification-report.json
+          python scripts/validate.py \
+            --schema schemas/connector-qualification.schema.json \
+            --data /tmp/hxp-official/qualification-report.json
+
+      - name: Build four no-write official request fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          for connector in \
+            halo-official-draft \
+            wechat-official-draft \
+            douyin-official-image-text \
+            xiaohongshu-official-share
+          do
+            python scripts/build_official_connector_request.py \
+              --qualification-report /tmp/hxp-official/qualification-report.json \
+              --connector-id "$connector" \
+              --packages /tmp/hxp-official/content-packages.json \
+              --plan /tmp/hxp-official/publication-plan.json \
+              --material-mapping data/examples/material-mapping.simulated.json \
+              --generated-at 2026-07-30T15:10:00+08:00 \
+              --expires-at 2026-07-30T16:10:00+08:00 \
+              --output "/tmp/hxp-official/request-${connector}.json"
+            python scripts/validate.py \
+              --schema schemas/official-connector-request.schema.json \
+              --data "/tmp/hxp-official/request-${connector}.json"
+          done
+
+      - name: Verify hard no-write invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('/tmp/hxp-official')
+          report = json.loads((root / 'qualification-report.json').read_text(encoding='utf-8'))
+          assert report['summary'] == {
+              'total': 4,
+              'unknown': 0,
+              'eligible': 0,
+              'blocked': 0,
+              'simulated': 4,
+          }
+          assert report['execution_enabled'] is False
+          assert report['external_write_performed'] is False
+          requests = sorted(root.glob('request-*.json'))
+          assert len(requests) == 4
+          for path in requests:
+              value = json.loads(path.read_text(encoding='utf-8'))
+              assert value['execution_enabled'] is False
+              assert value['external_write_performed'] is False
+              assert value['qualification_status'] == 'simulated'
+              serialized = path.read_text(encoding='utf-8').casefold()
+              assert 'bearer ' not in serialized
+              assert 'authorization:' not in serialized
+              assert 'access_token=' not in serialized
+          PY
+
+      - name: Upload official connector audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-official-connector-audit-2026-07-30
+          path: |
+            /tmp/hxp-official/qualification-report.json
+            /tmp/hxp-official/request-*.json
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,8 @@
+{
+  "connectors": {
+    "halo-official-draft": {"simulated": true},
+    "wechat-official-draft": {"simulated": true},
+    "douyin-official-image-text": {"simulated": true},
+    "xiaohongshu-official-share": {"simulated": true}
+  }
+}

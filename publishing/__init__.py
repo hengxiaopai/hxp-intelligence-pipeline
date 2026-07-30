@@ -18,8 +18,10 @@ from .connector_gate import (
 from .dry_run import PublicationDryRunError, build_dry_run_result
 from .handoff import HandoffError, build_handoff_bundle
 from .mobile_handoff import MobileHandoffError, build_mobile_handoff
+from .official_request import OfficialRequestError, build_official_request
 from .package_builder import ContentPackageError, build_content_package_batch
 from .plan import PublicationPlanError, build_publication_plan
+from .qualification import QualificationError, evaluate_qualifications
 
 __all__ = [
     "CockpitError",
@@ -27,9 +29,11 @@ __all__ = [
     "ContentPackageError",
     "HandoffError",
     "MobileHandoffError",
+    "OfficialRequestError",
     "PublicationApprovalError",
     "PublicationDryRunError",
     "PublicationPlanError",
+    "QualificationError",
     "apply_publication_approval",
     "build_connector_request",
     "build_content_package_batch",
@@ -37,8 +41,10 @@ __all__ = [
     "build_handoff_bundle",
     "build_initial_session",
     "build_mobile_handoff",
+    "build_official_request",
     "build_publication_approval",
     "build_publication_plan",
+    "evaluate_qualifications",
     "expire_connector_authorization",
     "issue_connector_authorization",
     "render_cockpit_html",
