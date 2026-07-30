@@ -57,6 +57,17 @@ def _markdown(package: Mapping[str, Any], asset_paths: list[str]) -> str:
         lines.extend([f"![{package['platform']} preview]({path})", ""])
     if content.get("body_markdown"):
         lines.extend([content["body_markdown"].strip(), ""])
+    if content.get("answer_question_placeholder"):
+        lines.extend(
+            [
+                "## 回答前先选择真实问题",
+                "",
+                str(content["answer_question_placeholder"]),
+                "",
+            ]
+        )
+    if content.get("answer_markdown"):
+        lines.extend(["## 知乎回答版", "", content["answer_markdown"].strip(), ""])
     if content.get("caption"):
         lines.extend(["## 发布文案", "", content["caption"].strip(), ""])
     if content.get("thread"):
@@ -84,6 +95,13 @@ def _html(package: Mapping[str, Any], asset_paths: list[str]) -> str:
     hashtags = " ".join(content.get("hashtags", []))
     body = html.escape(str(content.get("body_markdown", ""))).replace("\n", "<br>")
     caption = html.escape(str(content.get("caption", ""))).replace("\n", "<br>")
+    question = html.escape(str(content.get("answer_question_placeholder", ""))).replace("\n", "<br>")
+    answer = html.escape(str(content.get("answer_markdown", ""))).replace("\n", "<br>")
+    zhihu_sections = ""
+    if question:
+        zhihu_sections += f'<section><h2>回答前先选择真实问题</h2><p class="notice">{question}</p></section>'
+    if answer:
+        zhihu_sections += f'<section><h2>知乎回答版</h2><p>{answer}</p></section>'
     return f'''<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -94,12 +112,12 @@ def _html(package: Mapping[str, Any], asset_paths: list[str]) -> str:
 body{{margin:0;background:#f4f8fb;color:#10233f;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif}}
 main{{max-width:960px;margin:0 auto;padding:48px 24px 96px}}
 header,.card{{background:#fff;border:1px solid #d7e6f5;border-radius:24px;padding:28px;margin-bottom:24px}}
-h1{{font-size:34px;line-height:1.25;margin:0 0 16px}}p,li{{font-size:17px;line-height:1.8}}figure{{margin:0 0 20px}}img{{display:block;width:100%;height:auto;border-radius:18px;border:1px solid #d7e6f5}}.meta{{color:#56708f;font-size:14px}}.notice{{color:#8a5700;background:#fff8e8;border-radius:14px;padding:14px}}</style>
+h1{{font-size:34px;line-height:1.25;margin:0 0 16px}}h2{{font-size:23px;margin-top:30px}}p,li{{font-size:17px;line-height:1.8}}figure{{margin:0 0 20px}}img{{display:block;width:100%;height:auto;border-radius:18px;border:1px solid #d7e6f5}}.meta{{color:#56708f;font-size:14px}}.notice{{color:#8a5700;background:#fff8e8;border-radius:14px;padding:14px}}</style>
 </head>
 <body><main>
 <header><div class="meta">{html.escape(str(package['package_id']))} · DRY RUN · no external write</div><h1>{html.escape(str(content.get('title') or package['platform']))}</h1><p>{html.escape(str(content.get('summary','')))}</p></header>
 <div class="card">{images}</div>
-<div class="card"><p>{body}</p><p>{caption}</p><ol>{thread}</ol><p>{html.escape(hashtags)}</p><p class="meta">来源：{html.escape(' / '.join(content.get('source_labels', [])))}</p>{f'<p class="notice">{html.escape(str(content.get("risk_disclaimer")))}</p>' if content.get('risk_disclaimer') else ''}</div>
+<div class="card"><p>{body}</p>{zhihu_sections}<p>{caption}</p><ol>{thread}</ol><p>{html.escape(hashtags)}</p><p class="meta">来源：{html.escape(' / '.join(content.get('source_labels', [])))}</p>{f'<p class="notice">{html.escape(str(content.get("risk_disclaimer")))}</p>' if content.get('risk_disclaimer') else ''}</div>
 </main></body></html>
 '''
 
@@ -115,7 +133,7 @@ def build_dry_run_result(
     if plan.get("package_batch_id") != package_batch.get("package_batch_id"):
         raise PublicationDryRunError("发布计划与内容包批次不一致")
     if plan.get("write_actions_enabled") is not False:
-        raise PublicationDryRunError("Phase 5.1 禁止平台写入")
+        raise PublicationDryRunError("发布准备禁止平台写入")
     if approval is not None and approval.get("plan_id") != plan.get("plan_id"):
         raise PublicationDryRunError("批准记录与发布计划不一致")
 
