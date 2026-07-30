@@ -199,6 +199,9 @@ def build_initial_session(
     ]
     date_token = str(manifest["date"]).replace("-", "")
     safe_slug = _safe_id(session_slug).strip("-").casefold() or "manual"
+    if len(safe_slug) < 3:
+        safe_slug = f"{safe_slug}-run"
+    safe_slug = safe_slug[:40].rstrip("-") or "manual"
     return {
         "schema_version": "1.0.0",
         "session_id": f"cockpit-session-{date_token}-{safe_slug}",
