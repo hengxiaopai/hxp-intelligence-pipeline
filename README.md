@@ -10,9 +10,10 @@
 2. **审核与组装**：事实核验、3 / 7 / 30 天去重、编辑评分和日报组装。
 3. **人工批准**：自动校验通过后仍保持待审核，批准后才能推进历史、视觉和发布准备。
 4. **视觉与归档**：AI 生成无文字主视觉，固定模板排版中文并导出多平台资产。
-5. **内容适配**：为微信公众号、小红书、抖音图文、X 和网站生成独立草稿内容包。
+5. **内容适配**：为微信公众号、小红书、抖音图文、X、网站和知乎生成独立草稿内容包。
 6. **无扩展发布驾驶舱**：集中复制文案、下载有序图片、打开官方创作入口，并由用户手动记录结果。
-7. **连接器安全层**：官方连接器仍需绑定平台、账号、文案哈希、图片哈希、顺序、动作和有效期。
+7. **手机交接**：为小红书、抖音和知乎生成经过哈希验证的离线手机传输目录。
+8. **连接器安全层**：未来官方连接器必须绑定平台、账号、文案哈希、图片哈希、顺序、动作和有效期。
 
 ## 核心原则
 
@@ -102,7 +103,7 @@ python scripts/validate_platform_exports.py --help
 - [`docs/AI-VISUALS.md`](docs/AI-VISUALS.md)
 - [`docs/MULTI-PLATFORM-EXPORT.md`](docs/MULTI-PLATFORM-EXPORT.md)
 
-## 多平台内容包
+## 六平台内容包
 
 ```text
 briefing.json + export-manifest.json
@@ -112,6 +113,7 @@ briefing.json + export-manifest.json
 抖音图文内容包
 X 内容包
 网站文章草稿
+知乎文章版 + 回答版
   ↓
 无写入发布计划
   ↓
@@ -119,6 +121,15 @@ X 内容包
   ↓
 本地 HTML + Markdown 预览
 ```
+
+知乎现在是核心内容包中的第六个平台。知乎包同时携带：
+
+- 文章标题、摘要、完整 Markdown 和来源；
+- 回答问题占位提示；
+- 回答版 Markdown；
+- AI 辅助编辑说明；
+- 适用的风险声明；
+- 16:9 总览与详情图顺序。
 
 主要入口：
 
@@ -129,7 +140,7 @@ python scripts/approve_publication_plan.py --help
 python scripts/preview_publication.py --help
 ```
 
-Phase 5.1 结果始终保持：
+所有发布准备结果始终保持：
 
 ```json
 {
@@ -144,10 +155,10 @@ Phase 5.1 结果始终保持：
 
 ## 无扩展发布驾驶舱
 
-驾驶舱不安装浏览器扩展，不读取 Cookie，不使用 Playwright、CDP 或 DOM 注入。它把现有五个平台内容包扩展为六个平台交接目录，并从网站长文确定性派生知乎文章版和回答版。
+驾驶舱不安装浏览器扩展，不读取 Cookie，不使用 Playwright、CDP 或 DOM 注入。六个平台均直接消费已经验证的核心内容包，知乎不再临时从网站内容派生。
 
 ```text
-validated content packages
+validated six-platform packages
   ↓
 六平台交接目录
   ├── 微信公众号
@@ -195,6 +206,36 @@ python scripts/record_manual_publication.py \
 
 程序不会根据打开页面、复制内容或进程退出码推断发布成功。任何已发布状态必须由用户明确确认，并填写平台内容 ID 或 HTTPS 链接；内容或图片哈希发生变化后，旧状态不能复用。
 
+## 手机交接包
+
+小红书、抖音和知乎可以生成独立手机传输目录：
+
+```bash
+python scripts/build_mobile_handoff.py \
+  --handoff-manifest /path/to/handoff/manifest.json \
+  --handoff-root /path/to/handoff \
+  --output-dir /path/to/mobile \
+  --manifest /path/to/mobile/manifest.json \
+  --generated-at 2026-07-30T13:20:00+08:00
+```
+
+输出内容：
+
+```text
+mobile/
+├── manifest.json
+├── README.txt
+├── xiaohongshu/
+│   ├── README.txt
+│   ├── content.txt
+│   ├── content.md
+│   └── assets/
+├── douyin/
+└── zhihu/
+```
+
+手机交接包重新校验文案与图片 SHA-256，不包含账号、密码、Cookie、二维码、浏览器 Profile 或自动发布程序。最终发布仍由用户在官方 App 中确认。
+
 完整规范见 [`docs/PUBLISHING-COCKPIT.md`](docs/PUBLISHING-COCKPIT.md)。
 
 ## 连接器授权与 Simulator
@@ -222,24 +263,9 @@ python scripts/issue_connector_authorization.py \
   --expires-at 2026-07-29T17:00:00+08:00 \
   --issued-by hengxiaopai \
   --output connector-authorization.json
-
-python scripts/build_connector_request.py \
-  --authorization connector-authorization.json \
-  --plan publication-plan.approved.json \
-  --package-id content-package-YYYYMMDD-website \
-  --account-ref hxp-website-staging \
-  --requested-at 2026-07-29T16:30:00+08:00 \
-  --request-output connector-request.json \
-  --authorization-output connector-authorization.consumed.json
-
-python scripts/simulate_connector_write.py \
-  --request connector-request.json \
-  --executed-at 2026-07-29T16:31:00+08:00 \
-  --result-output connector-result.json \
-  --ledger-output connector-ledger.json
 ```
 
-授权是一次性的，并绑定平台、账号、发布条目、文案 SHA-256、按顺序排列的图片 SHA-256、动作和到期时间。任意漂移、过期、撤销或复用都会硬阻断。相同幂等键的完全一致请求只返回既有模拟结果。
+授权是一次性的，并绑定平台、账号、发布条目、文案 SHA-256、按顺序排列的图片 SHA-256、动作和到期时间。任意漂移、过期、撤销或复用都会硬阻断。
 
 完整规范见 [`docs/CONNECTORS.md`](docs/CONNECTORS.md)。
 
@@ -286,5 +312,5 @@ CI 不调用付费图片 API，不访问真实发布平台，不读取真实平�
 - Phase 5.1：五平台内容包、发布计划与无写入人工确认 ✅
 - Phase 5.2A：连接器能力、一次性授权、幂等账本与离线 Simulator ✅
 - Phase 5.3A：本地浏览器桥接协议与离线验证，可选增强 ✅
-- Phase 5.3B：无扩展发布驾驶舱与知乎人工交接包 🚧
+- Phase 5.3B：无扩展驾驶舱、六平台原生内容包与手机交接 ✅
 - Phase 5.4：网站 / Halo、微信公众号、抖音、小红书官方能力连接器 ⏳
