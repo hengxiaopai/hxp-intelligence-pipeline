@@ -108,12 +108,14 @@ class PublishingCockpitTests(unittest.TestCase):
         manifest = self.build_manifest()
         self.validate_schema("handoff-manifest.schema.json", manifest)
         self.assertEqual(6, manifest["summary"]["ready"])
-        self.assertEqual(1, manifest["summary"]["derived"])
+        self.assertEqual(0, manifest["summary"]["derived"])
         self.assertFalse(manifest["external_write_performed"])
         platforms = [value["platform"] for value in manifest["platforms"]]
         self.assertEqual(["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"], platforms)
         zhihu = manifest["platforms"][-1]
-        self.assertTrue(zhihu["derived"])
+        self.assertFalse(zhihu["derived"])
+        core_zhihu = next(value for value in self.package_batch["packages"] if value["platform"] == "zhihu")
+        self.assertEqual(core_zhihu["content_hash"], zhihu["content_hash"])
         self.assertIn("请先在知乎选择", zhihu["content"]["answer_question_placeholder"])
         self.assertIn("AI 辅助", zhihu["content"]["answer_markdown"])
         for entry in manifest["platforms"]:
