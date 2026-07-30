@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/cockpit-session.schema.json",
+  "title": "HXP Publishing Cockpit Session",
+  "description": "用户手动记录各平台发布进度。程序不能自动推断已发布。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "handoff_id", "created_at", "updated_at", "external_write_performed", "records", "summary"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "session_id": {"type": "string", "pattern": "^cockpit-session-[0-9]{8}-[a-z0-9-]{3,40}$"},
+    "handoff_id": {"type": "string", "pattern": "^handoff-[0-9]{8}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "external_write_performed": {"type": "boolean", "const": false},
+    "records": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/record"}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "not_started", "opened", "pasted", "draft_saved", "published", "failed", "skipped"],
+      "properties": {
+        "total": {"type": "integer", "const": 6},
+        "not_started": {"type": "integer", "minimum": 0},
+        "opened": {"type": "integer", "minimum": 0},
+        "pasted": {"type": "integer", "minimum": 0},
+        "draft_saved": {"type": "integer", "minimum": 0},
+        "published": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "skipped": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "status", "content_hash", "asset_hashes", "updated_at", "external_content_id", "external_url", "notes", "confirmed_by_user"],
+      "properties": {
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]},
+        "status": {"type": "string", "enum": ["not_started", "opened", "pasted", "draft_saved", "published", "failed", "skipped"]},
+        "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "asset_hashes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "external_content_id": {"type": ["string", "null"], "maxLength": 300},
+        "external_url": {"type": ["string", "null"], "format": "uri", "pattern": "^https://"},
+        "notes": {"type": ["string", "null"], "maxLength": 1000},
+        "confirmed_by_user": {"type": "boolean"}
+      }
+    }
+  }
+}

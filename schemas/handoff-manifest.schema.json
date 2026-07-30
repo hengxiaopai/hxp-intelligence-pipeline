@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/handoff-manifest.schema.json",
+  "title": "HXP No-extension Handoff Manifest",
+  "description": "由已验证内容包生成的离线人工发布交接清单，不执行外部写入。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "handoff_id", "package_batch_id", "date", "generated_at", "external_write_performed", "platforms", "summary"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "handoff_id": {"type": "string", "pattern": "^handoff-[0-9]{8}$"},
+    "package_batch_id": {"type": "string", "pattern": "^content-package-batch-[0-9]{8}$"},
+    "date": {"type": "string", "format": "date"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "external_write_performed": {"type": "boolean", "const": false},
+    "platforms": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/platform"}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "ready", "blocked", "derived"],
+      "properties": {
+        "total": {"type": "integer", "const": 6},
+        "ready": {"type": "integer", "minimum": 0, "maximum": 6},
+        "blocked": {"type": "integer", "minimum": 0, "maximum": 6},
+        "derived": {"type": "integer", "minimum": 0, "maximum": 6}
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "byte_size"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 1}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "source_path", "bundle_path", "sha256", "width", "height"],
+      "properties": {
+        "order": {"type": "integer", "minimum": 1},
+        "source_path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "bundle_path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "width": {"type": "integer", "minimum": 500},
+        "height": {"type": "integer", "minimum": 500}
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "summary", "body_markdown", "caption", "thread", "hashtags", "seo_title", "seo_description", "slug", "source_labels", "risk_disclaimer", "answer_question_placeholder", "answer_markdown"],
+      "properties": {
+        "title": {"type": "string", "maxLength": 120},
+        "summary": {"type": "string", "maxLength": 500},
+        "body_markdown": {"type": "string", "maxLength": 40000},
+        "caption": {"type": "string", "maxLength": 8000},
+        "thread": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 2000}},
+        "hashtags": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 80}},
+        "seo_title": {"type": "string", "maxLength": 160},
+        "seo_description": {"type": "string", "maxLength": 500},
+        "slug": {"type": "string", "maxLength": 160},
+        "source_labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "maxLength": 160}},
+        "risk_disclaimer": {"type": ["string", "null"], "maxLength": 500},
+        "answer_question_placeholder": {"type": ["string", "null"], "maxLength": 300},
+        "answer_markdown": {"type": "string", "maxLength": 40000}
+      }
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "display_name", "status", "derived", "handoff_mode", "creator_url", "allowed_origins", "content_hash", "asset_hashes", "content", "assets", "actions", "checklist", "files", "errors"],
+      "properties": {
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]},
+        "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "status": {"type": "string", "enum": ["ready", "blocked"]},
+        "derived": {"type": "boolean"},
+        "handoff_mode": {"type": "string", "enum": ["copy_download_open", "copy_download_open_mobile", "derived_article_answer"]},
+        "creator_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+        "allowed_origins": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^https://[^/?#]+$"}},
+        "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "asset_hashes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+        "content": {"$ref": "#/$defs/content"},
+        "assets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/asset"}},
+        "actions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["copy_title", "copy_summary", "copy_body", "copy_caption", "copy_thread", "copy_hashtags", "copy_seo", "copy_article", "copy_answer", "download_assets", "open_creator", "mobile_handoff"]}},
+        "checklist": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 2, "maxLength": 200}},
+        "files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["json", "markdown", "text"],
+          "properties": {"json": {"$ref": "#/$defs/file"}, "markdown": {"$ref": "#/$defs/file"}, "text": {"$ref": "#/$defs/file"}}
+        },
+        "errors": {"type": "array", "items": {"type": "string", "maxLength": 300}}
+      }
+    }
+  }
+}

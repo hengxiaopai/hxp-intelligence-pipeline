@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "external_write_enabled": false,
+  "browser_automation_enabled": false,
+  "platforms": [
+    {
+      "platform": "wechat",
+      "display_name": "微信公众号",
+      "handoff_mode": "copy_download_open",
+      "creator_url": "https://mp.weixin.qq.com/",
+      "allowed_origins": ["https://mp.weixin.qq.com"],
+      "actions": ["copy_title", "copy_summary", "copy_body", "download_assets", "open_creator"],
+      "checklist": ["标题与摘要已复核", "正文来源完整", "封面比例为2.35:1", "风险声明已检查", "最终群发仍由人工确认"]
+    },
+    {
+      "platform": "xiaohongshu",
+      "display_name": "小红书",
+      "handoff_mode": "copy_download_open_mobile",
+      "creator_url": "https://creator.xiaohongshu.com/",
+      "allowed_origins": ["https://creator.xiaohongshu.com"],
+      "actions": ["copy_title", "copy_caption", "copy_hashtags", "download_assets", "open_creator", "mobile_handoff"],
+      "checklist": ["标题与正文已复核", "图片顺序正确", "图片无大段伪文字", "话题标签不过度堆叠", "发布按钮仍由人工点击"]
+    },
+    {
+      "platform": "douyin",
+      "display_name": "抖音图文",
+      "handoff_mode": "copy_download_open_mobile",
+      "creator_url": "https://creator.douyin.com/",
+      "allowed_origins": ["https://creator.douyin.com"],
+      "actions": ["copy_title", "copy_caption", "copy_hashtags", "download_assets", "open_creator", "mobile_handoff"],
+      "checklist": ["标题与描述已复核", "9:16图片顺序正确", "无收益承诺", "品牌标识不过度干扰内容", "发布按钮仍由人工点击"]
+    },
+    {
+      "platform": "x",
+      "display_name": "X",
+      "handoff_mode": "copy_download_open",
+      "creator_url": "https://x.com/compose/post",
+      "allowed_origins": ["https://x.com"],
+      "actions": ["copy_caption", "copy_thread", "copy_hashtags", "download_assets", "open_creator"],
+      "checklist": ["首帖不超过平台限制", "线程顺序正确", "来源简称存在", "图片与正文一致", "发送仍由人工确认"]
+    },
+    {
+      "platform": "website",
+      "display_name": "珩小派网站",
+      "handoff_mode": "copy_download_open",
+      "creator_url": "https://hengxiaopai.com/",
+      "allowed_origins": ["https://hengxiaopai.com"],
+      "actions": ["copy_title", "copy_summary", "copy_body", "copy_seo", "download_assets", "open_creator"],
+      "checklist": ["标题、摘要与SEO已复核", "正文来源完整", "Slug正确", "图片顺序正确", "站点草稿创建后仍需人工预览"]
+    },
+    {
+      "platform": "zhihu",
+      "display_name": "知乎",
+      "handoff_mode": "derived_article_answer",
+      "creator_url": "https://www.zhihu.com/creator",
+      "allowed_origins": ["https://www.zhihu.com"],
+      "actions": ["copy_title", "copy_summary", "copy_article", "copy_answer", "download_assets", "open_creator"],
+      "checklist": ["已选择文章或回答形态", "回答已绑定真实问题而非占位文本", "观点与事实边界清楚", "来源和AI辅助说明已保留", "发布仍由人工确认"]
+    }
+  ],
+  "global_rules": {
+    "extensions_required": false,
+    "cookies_forbidden": true,
+    "credentials_forbidden": true,
+    "playwright_forbidden": true,
+    "cdp_forbidden": true,
+    "dom_injection_forbidden": true,
+    "clipboard_read_forbidden": true,
+    "clipboard_write_requires_user_click": true,
+    "official_https_links_only": true,
+    "external_write_performed": false,
+    "publication_success_must_be_user_recorded": true
+  }
+}
