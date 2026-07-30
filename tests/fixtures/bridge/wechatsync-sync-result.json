@@ -1,0 +1,27 @@
+{
+  "syncId": "fixture-sync-20260730",
+  "results": [
+    {
+      "platform": "zhihu",
+      "success": true,
+      "draftOnly": true,
+      "postId": "2000000000000000001",
+      "postUrl": "https://zhuanlan.zhihu.com/p/2000000000000000001/edit?token=secret&source=hxp#draft",
+      "message": "草稿已保存"
+    },
+    {
+      "platform": "juejin",
+      "success": true,
+      "draftOnly": true,
+      "postId": "draft-9001",
+      "postUrl": "https://juejin.cn/editor/drafts/9001?session_id=secret&from=hxp",
+      "message": "draft created"
+    },
+    {
+      "platform": "csdn",
+      "success": false,
+      "draftOnly": true,
+      "error": "平台未登录，请先在浏览器中登录"
+    }
+  ]
+}
