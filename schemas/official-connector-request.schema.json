@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/official-connector-request.schema.json",
+  "title": "HXP No-write Official Connector Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "request_id", "connector_id", "platform", "action", "qualification_status", "publication_entry_id", "package_id", "account_ref", "application_ref", "content_hash", "asset_hashes", "material_mapping", "credential_environment_variables", "official_origin", "generated_at", "expires_at", "idempotency_key", "request_plan", "execution_enabled", "external_write_performed"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "request_id": {"type": "string", "pattern": "^official-request-[0-9]{8}-[a-z0-9-]{3,100}$"},
+    "connector_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+    "platform": {"type": "string", "enum": ["website", "wechat", "douyin", "xiaohongshu"]},
+    "action": {"type": "string", "enum": ["draft_only", "connector_publish", "manual_publish"]},
+    "qualification_status": {"type": "string", "enum": ["eligible", "simulated"]},
+    "publication_entry_id": {"type": "string", "pattern": "^publication-entry-[0-9]{8}-(website|wechat|douyin|xiaohongshu)$"},
+    "package_id": {"type": "string", "pattern": "^content-package-[0-9]{8}-(website|wechat|douyin|xiaohongshu)$"},
+    "account_ref": {"type": ["string", "null"], "maxLength": 160},
+    "application_ref": {"type": ["string", "null"], "maxLength": 160},
+    "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "asset_hashes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+    "material_mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "cover_reference", "asset_references"],
+      "properties": {
+        "status": {"type": "string", "enum": ["not_required", "pending", "complete", "simulated"]},
+        "cover_reference": {"type": ["string", "null"], "maxLength": 300},
+        "asset_references": {"type": "array", "items": {"type": "string", "maxLength": 300}}
+      }
+    },
+    "credential_environment_variables": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,100}$"}},
+    "official_origin": {"type": "string", "pattern": "^https://[^/?#]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "idempotency_key": {"type": "string", "pattern": "^official-[a-f0-9]{32,64}$"},
+    "request_plan": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "operation", "method", "path", "body_fields", "requires_user_confirmation"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "operation": {"type": "string", "minLength": 2, "maxLength": 120},
+          "method": {"type": "string", "enum": ["GET", "POST", "PUT", "CLIENT_SHARE"]},
+          "path": {"type": "string", "minLength": 1, "maxLength": 300},
+          "body_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "maxLength": 120}},
+          "requires_user_confirmation": {"type": "boolean"}
+        }
+      }
+    },
+    "execution_enabled": {"type": "boolean", "const": false},
+    "external_write_performed": {"type": "boolean", "const": false}
+  }
+}
