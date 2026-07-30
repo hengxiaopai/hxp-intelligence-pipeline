@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/halo-draft-execution.schema.json",
+  "title": "HXP Halo Draft Mock Execution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "execution_id", "request_id", "connector_id", "mode", "executed_at", "idempotency_key", "payload_hash", "content_hash", "asset_hashes", "operations", "result", "external_write_performed"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "execution_id": {"type": "string", "pattern": "^halo-mock-execution-[0-9]{8}-[a-f0-9]{12}$"},
+    "request_id": {"type": "string", "pattern": "^official-request-[0-9]{8}-halo-official-draft$"},
+    "connector_id": {"type": "string", "const": "halo-official-draft"},
+    "mode": {"type": "string", "const": "mock"},
+    "executed_at": {"type": "string", "format": "date-time"},
+    "idempotency_key": {"type": "string", "pattern": "^official-[a-f0-9]{32,64}$"},
+    "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "asset_hashes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+    "operations": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "operation", "status", "request_path", "response_ref"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1, "maximum": 3},
+          "operation": {"type": "string", "enum": ["create_draft_post", "update_draft_content", "status_lookup"]},
+          "status": {"type": "string", "enum": ["simulated", "replayed", "failed"]},
+          "request_path": {"type": "string", "minLength": 1, "maxLength": 300},
+          "response_ref": {"type": ["string", "null"], "maxLength": 300}
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "draft_name", "draft_state", "replayed", "error_type", "error_message"],
+      "properties": {
+        "status": {"type": "string", "enum": ["simulated", "replayed", "failed"]},
+        "draft_name": {"type": ["string", "null"], "pattern": "^mock-post-[a-f0-9]{16}$"},
+        "draft_state": {"type": ["string", "null"], "const": "DRAFT"},
+        "replayed": {"type": "boolean"},
+        "error_type": {"type": ["string", "null"], "maxLength": 120},
+        "error_message": {"type": ["string", "null"], "maxLength": 600}
+      }
+    },
+    "external_write_performed": {"type": "boolean", "const": false}
+  }
+}

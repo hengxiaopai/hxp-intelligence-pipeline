@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "connector_id": "halo-official-draft",
+  "platform": "website",
+  "action": "draft_only",
+  "execution_mode": "mock_only",
+  "live_execution_enabled": false,
+  "external_write_performed": false,
+  "allowed_operations": ["create_draft_post", "update_draft_content", "status_lookup"],
+  "forbidden_operations": ["publish", "delete_post", "make_public"],
+  "forbidden_path_fragments": ["/publish", "/release", "/delete"],
+  "credential_environment_variable": "HXP_HALO_PAT",
+  "base_url_environment_variable": "HXP_HALO_BASE_URL",
+  "mock": {
+    "network_listener_enabled": false,
+    "loopback_only": true,
+    "persist_credentials": false,
+    "persist_authorization_headers": false,
+    "draft_status": "DRAFT"
+  },
+  "live_authorization": {
+    "required": true,
+    "maximum_lifetime_minutes": 60,
+    "single_use": true,
+    "site_fingerprint_required": true,
+    "halo_version_required": true,
+    "content_hash_required": true,
+    "ordered_asset_hashes_required": true,
+    "publish_forbidden": true
+  }
+}
