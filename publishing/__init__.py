@@ -17,6 +17,7 @@ from .connector_gate import (
 )
 from .dry_run import PublicationDryRunError, build_dry_run_result
 from .handoff import HandoffError, build_handoff_bundle
+from .mobile_handoff import MobileHandoffError, build_mobile_handoff
 from .package_builder import ContentPackageError, build_content_package_batch
 from .plan import PublicationPlanError, build_publication_plan
 
@@ -25,6 +26,7 @@ __all__ = [
     "ConnectorGateError",
     "ContentPackageError",
     "HandoffError",
+    "MobileHandoffError",
     "PublicationApprovalError",
     "PublicationDryRunError",
     "PublicationPlanError",
@@ -34,6 +36,7 @@ __all__ = [
     "build_dry_run_result",
     "build_handoff_bundle",
     "build_initial_session",
+    "build_mobile_handoff",
     "build_publication_approval",
     "build_publication_plan",
     "expire_connector_authorization",
