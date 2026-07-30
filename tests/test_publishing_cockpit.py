@@ -138,6 +138,15 @@ class PublishingCockpitTests(unittest.TestCase):
         self.assertNotIn("playwright", body.casefold())
         self.assertNotIn("document.cookie", body.casefold())
 
+    def test_short_session_slug_is_normalized_to_schema_valid_id(self) -> None:
+        session = build_initial_session(
+            self.build_manifest(),
+            created_at="2026-07-30T13:09:00+08:00",
+            session_slug="ci",
+        )
+        self.validate_schema("cockpit-session.schema.json", session)
+        self.assertEqual("cockpit-session-20260729-ci-run", session["session_id"])
+
     def test_manual_session_requires_user_confirmation_and_content_identity(self) -> None:
         manifest = self.build_manifest()
         session = build_initial_session(
