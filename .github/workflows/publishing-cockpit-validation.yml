@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - "config/cockpit-platforms.json"
+      - "config/platform-profiles.json"
+      - "schemas/content-package.schema.json"
       - "schemas/handoff-manifest.schema.json"
       - "schemas/cockpit-session.schema.json"
+      - "publishing/package_builder.py"
       - "publishing/cockpit.py"
       - "publishing/handoff.py"
       - "publishing/__init__.py"
@@ -46,6 +49,7 @@ jobs:
         run: >-
           python -m py_compile
           publishing/__init__.py
+          publishing/package_builder.py
           publishing/handoff.py
           publishing/cockpit.py
           scripts/build_handoff_bundle.py
@@ -125,9 +129,12 @@ jobs:
           session = json.loads((root / 'session.updated.json').read_text(encoding='utf-8'))
           assert manifest['external_write_performed'] is False
           assert session['external_write_performed'] is False
-          assert manifest['summary'] == {'total': 6, 'ready': 6, 'blocked': 0, 'derived': 1}
+          assert manifest['summary'] == {'total': 6, 'ready': 6, 'blocked': 0, 'derived': 0}
           assert session['summary']['draft_saved'] == 1
           assert session['summary']['published'] == 0
+          zhihu = next(entry for entry in manifest['platforms'] if entry['platform'] == 'zhihu')
+          assert zhihu['derived'] is False
+          assert 'AI 辅助' in zhihu['content']['answer_markdown']
           for entry in manifest['platforms']:
               parsed = urlsplit(entry['creator_url'])
               assert parsed.scheme == 'https'
