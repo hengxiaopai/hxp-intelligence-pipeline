@@ -37,13 +37,16 @@ def simulate_halo_draft(
         raise HaloDraftError("Halo Payload必须保持不可执行且无外部写入")
     if payload.get("post", {}).get("spec", {}).get("publish") is not False:
         raise HaloDraftError("Halo Mock禁止publish=true")
+
     payload_hash = canonical_hash(
         {
-            "post": payload.get("post"),
-            "content": payload.get("content"),
+            "request_id": payload.get("request_id"),
+            "package_id": payload.get("package_id"),
             "content_hash": payload.get("content_hash"),
             "asset_hashes": payload.get("asset_hashes"),
-            "paths": payload.get("paths"),
+            "title": payload.get("post", {}).get("spec", {}).get("title"),
+            "slug": payload.get("post", {}).get("spec", {}).get("slug"),
+            "raw": payload.get("content", {}).get("raw"),
         }
     )
     if payload_hash != payload.get("payload_hash"):
