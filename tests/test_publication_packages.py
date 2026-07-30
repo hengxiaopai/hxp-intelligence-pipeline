@@ -22,6 +22,7 @@ from publishing.package_builder import (
 from publishing.plan import build_publication_plan
 from visual.queue import load_json
 
+
 ROOT = Path(__file__).resolve().parents[1]
 RUN_DIR = ROOT / "data/daily/2026-07-29"
 PROFILES = load_json(ROOT / "config/platform-profiles.json")
@@ -31,6 +32,7 @@ PRESETS = {
     "landscape_16x9": (2560, 1440, "16:9", ["x", "youtube", "website"]),
     "wechat_cover_235x1": (2350, 1000, "2.35:1", ["wechat_article"]),
 }
+PLATFORMS = ("wechat", "xiaohongshu", "douyin", "x", "website", "zhihu")
 
 
 class PublicationPackageTests(unittest.TestCase):
@@ -115,18 +117,28 @@ class PublicationPackageTests(unittest.TestCase):
             profiles=PROFILES,
         )
 
-    def test_builds_five_validated_platform_packages(self) -> None:
+    def test_builds_six_validated_platform_packages(self) -> None:
         batch = self.build_batch()
         self.validate_schema("content-package.schema.json", batch)
-        self.assertEqual(5, batch["summary"]["validated"])
+        self.assertEqual(6, batch["summary"]["validated"])
         self.assertEqual(0, batch["summary"]["blocked"])
         packages = {value["platform"]: value for value in batch["packages"]}
+        self.assertEqual(set(PLATFORMS), set(packages))
         self.assertEqual(["wechat_cover_235x1"], [a["preset"] for a in packages["wechat"]["assets"]])
         self.assertEqual(6, len(packages["xiaohongshu"]["assets"]))
         self.assertEqual(6, len(packages["douyin"]["assets"]))
         self.assertEqual(1, len(packages["x"]["assets"]))
         self.assertEqual(6, len(packages["website"]["assets"]))
+        self.assertEqual(6, len(packages["zhihu"]["assets"]))
+        self.assertIn("请先在知乎选择", packages["zhihu"]["content"]["answer_question_placeholder"])
+        self.assertIn("AI 辅助", packages["zhihu"]["content"]["answer_markdown"])
         self.assertFalse(batch["write_actions_enabled"])
+
+    def test_non_zhihu_packages_have_explicit_empty_answer_fields(self) -> None:
+        packages = {value["platform"]: value for value in self.build_batch()["packages"]}
+        for platform in ("wechat", "xiaohongshu", "douyin", "x", "website"):
+            self.assertIsNone(packages[platform]["content"]["answer_question_placeholder"])
+            self.assertEqual("", packages[platform]["content"]["answer_markdown"])
 
     def test_content_hashes_are_deterministic(self) -> None:
         first = self.build_batch()
@@ -148,7 +160,7 @@ class PublicationPackageTests(unittest.TestCase):
             created_at="2026-07-29T16:30:00+08:00",
         )
         self.validate_schema("publication-plan.schema.json", plan)
-        self.assertEqual(5, plan["summary"]["pending"])
+        self.assertEqual(6, plan["summary"]["pending"])
         self.assertTrue(all(not value["write_allowed"] for value in plan["entries"]))
 
         decisions = []
@@ -176,7 +188,7 @@ class PublicationPackageTests(unittest.TestCase):
         updated = apply_publication_approval(plan=plan, approval=approval)
         self.validate_schema("publication-approval.schema.json", approval)
         self.validate_schema("publication-plan.schema.json", updated)
-        self.assertEqual(5, updated["summary"]["approved"])
+        self.assertEqual(6, updated["summary"]["approved"])
         self.assertFalse(updated["write_actions_enabled"])
         self.assertTrue(all(not value["write_allowed"] for value in updated["entries"]))
 
@@ -207,7 +219,7 @@ class PublicationPackageTests(unittest.TestCase):
                 approved_at="2026-07-29T16:35:00+08:00",
             )
 
-    def test_dry_run_creates_five_html_and_markdown_previews(self) -> None:
+    def test_dry_run_creates_six_html_and_markdown_previews(self) -> None:
         batch = self.build_batch()
         plan = build_publication_plan(
             package_batch=batch,
@@ -220,11 +232,14 @@ class PublicationPackageTests(unittest.TestCase):
             executed_at="2026-07-29T16:40:00+08:00",
         )
         self.validate_schema("publication-result.schema.json", result)
-        self.assertEqual(5, result["summary"]["previewed"])
+        self.assertEqual(6, result["summary"]["previewed"])
         self.assertFalse(result["external_write_performed"])
-        for platform in ("wechat", "xiaohongshu", "douyin", "x", "website"):
+        for platform in PLATFORMS:
             self.assertTrue((self.root / "preview" / f"{platform}.html").is_file())
             self.assertTrue((self.root / "preview" / f"{platform}.md").is_file())
+        zhihu_markdown = (self.root / "preview" / "zhihu.md").read_text(encoding="utf-8")
+        self.assertIn("知乎回答版", zhihu_markdown)
+        self.assertIn("回答前先选择真实问题", zhihu_markdown)
 
 
 if __name__ == "__main__":

@@ -9,17 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 from urllib.parse import urlsplit
 
-from .platform_rules import canonical_hash
-
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_SOURCE_PLATFORMS = {"wechat", "xiaohongshu", "douyin", "x", "website"}
-EXPECTED_COCKPIT_PLATFORMS = ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]
+EXPECTED_PLATFORMS = ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]
 
 
 class HandoffError(ValueError):
@@ -79,8 +75,7 @@ def _profile_map(config: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     if config.get("browser_automation_enabled") is not False:
         raise HandoffError("发布驾驶舱不得启用浏览器自动化")
     rules = config.get("global_rules", {})
-    required_false = (
-        "extensions_required",
+    required_true = (
         "cookies_forbidden",
         "credentials_forbidden",
         "playwright_forbidden",
@@ -92,7 +87,7 @@ def _profile_map(config: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     )
     if rules.get("extensions_required") is not False:
         raise HandoffError("无扩展发布驾驶舱不得要求浏览器扩展")
-    for key in required_false[1:]:
+    for key in required_true:
         if rules.get(key) is not True:
             raise HandoffError(f"发布驾驶舱安全规则缺失：{key}")
     if rules.get("external_write_performed") is not False:
@@ -110,8 +105,8 @@ def _profile_map(config: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
         if creator_origin not in normalized_allowed:
             raise HandoffError(f"创作入口不在白名单中：{platform}：{creator_url}")
         result[platform] = profile
-    if list(result) != EXPECTED_COCKPIT_PLATFORMS:
-        raise HandoffError(f"驾驶舱平台必须按固定顺序完整覆盖：{EXPECTED_COCKPIT_PLATFORMS}")
+    if list(result) != EXPECTED_PLATFORMS:
+        raise HandoffError(f"驾驶舱平台必须按固定顺序完整覆盖：{EXPECTED_PLATFORMS}")
     return result
 
 
@@ -129,8 +124,8 @@ def _package_map(package_batch: Mapping[str, Any]) -> dict[str, Mapping[str, Any
         if not validations or not all(bool(value) for value in validations.values()):
             raise HandoffError(f"内容包校验项未全部通过：{platform}")
         result[platform] = package
-    if set(result) != EXPECTED_SOURCE_PLATFORMS:
-        raise HandoffError(f"内容包必须完整覆盖：{sorted(EXPECTED_SOURCE_PLATFORMS)}")
+    if list(result) != EXPECTED_PLATFORMS:
+        raise HandoffError(f"内容包必须按固定顺序完整覆盖：{EXPECTED_PLATFORMS}")
     return result
 
 
@@ -147,40 +142,9 @@ def _normalized_content(content: Mapping[str, Any]) -> dict[str, Any]:
         "slug": str(content.get("slug", "")),
         "source_labels": [str(value) for value in content.get("source_labels", [])],
         "risk_disclaimer": content.get("risk_disclaimer"),
-        "answer_question_placeholder": None,
-        "answer_markdown": "",
+        "answer_question_placeholder": content.get("answer_question_placeholder"),
+        "answer_markdown": str(content.get("answer_markdown", "")),
     }
-
-
-def _derive_zhihu(website_package: Mapping[str, Any]) -> tuple[dict[str, Any], list[Mapping[str, Any]]]:
-    source = _normalized_content(website_package["content"])
-    title = source["title"][:100]
-    summary = source["summary"]
-    article = source["body_markdown"]
-    disclaimer = source["risk_disclaimer"]
-    answer_question = "请先在知乎选择一个与本文主题直接相关的真实问题，再粘贴回答。"
-    answer_lines = [
-        "## 先说结论",
-        "",
-        summary or title,
-        "",
-        "## 为什么值得关注",
-        "",
-        article,
-        "",
-        "---",
-        "",
-        "本文由珩小派基于公开来源整理，并使用 AI 辅助完成结构化编辑；事实与来源已由人工复核。",
-    ]
-    if disclaimer:
-        answer_lines.extend(["", f"> {disclaimer}"])
-    content = {
-        **source,
-        "title": title,
-        "answer_question_placeholder": answer_question,
-        "answer_markdown": "\n".join(answer_lines).strip() + "\n",
-    }
-    return content, list(website_package.get("assets", []))
 
 
 def _markdown_for_platform(platform: str, content: Mapping[str, Any]) -> str:
@@ -295,17 +259,12 @@ def build_handoff_bundle(
     date = str(package_batch["date"])
     platforms: list[dict[str, Any]] = []
 
-    for platform in EXPECTED_COCKPIT_PLATFORMS:
+    for platform in EXPECTED_PLATFORMS:
         profile = profiles[platform]
-        derived = platform == "zhihu"
-        if derived:
-            content, source_assets = _derive_zhihu(packages["website"])
-            content_hash = canonical_hash(content)
-        else:
-            package = packages[platform]
-            content = _normalized_content(package["content"])
-            source_assets = list(package.get("assets", []))
-            content_hash = str(package["content_hash"])
+        package = packages[platform]
+        content = _normalized_content(package["content"])
+        source_assets = list(package.get("assets", []))
+        content_hash = str(package["content_hash"])
 
         platform_dir = output_dir / platform
         copied_assets = _copy_assets(
@@ -317,7 +276,7 @@ def build_handoff_bundle(
             "schema_version": "1.0.0",
             "platform": platform,
             "display_name": profile["display_name"],
-            "derived": derived,
+            "derived": False,
             "content_hash": content_hash,
             "asset_hashes": [value["sha256"] for value in copied_assets],
             "content": content,
@@ -338,7 +297,7 @@ def build_handoff_bundle(
                 "platform": platform,
                 "display_name": str(profile["display_name"]),
                 "status": "ready",
-                "derived": derived,
+                "derived": False,
                 "handoff_mode": str(profile["handoff_mode"]),
                 "creator_url": str(profile["creator_url"]),
                 "allowed_origins": [str(value) for value in profile["allowed_origins"]],
@@ -369,6 +328,6 @@ def build_handoff_bundle(
             "total": 6,
             "ready": 6,
             "blocked": 0,
-            "derived": sum(value["derived"] for value in platforms),
+            "derived": 0,
         },
     }

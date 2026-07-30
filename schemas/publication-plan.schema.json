@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hengxiaopai.com/schemas/publication-plan.schema.json",
   "title": "HXP Publication Plan",
-  "description": "多平台发布计划。Phase 5.1 默认只生成草稿和人工发布清单，不执行平台写入。",
+  "description": "多平台发布计划。当前阶段默认只生成草稿和人工发布清单，不执行平台写入。",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,8 +24,8 @@
     "write_actions_enabled": {"type": "boolean", "const": false},
     "entries": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 6,
+      "maxItems": 6,
       "items": {"$ref": "#/$defs/entry"}
     },
     "summary": {
@@ -62,12 +62,12 @@
       "properties": {
         "entry_id": {
           "type": "string",
-          "pattern": "^publication-entry-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+          "pattern": "^publication-entry-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website|zhihu)$"
         },
-        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]},
         "package_id": {
           "type": "string",
-          "pattern": "^content-package-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+          "pattern": "^content-package-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website|zhihu)$"
         },
         "account_ref": {"type": ["string", "null"], "maxLength": 160},
         "action": {"type": "string", "enum": ["draft_only", "manual_publish", "connector_publish"]},

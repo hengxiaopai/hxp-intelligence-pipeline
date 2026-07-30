@@ -19,6 +19,8 @@ class ContentPackageError(ValueError):
     """Raised when source content or platform assets are incomplete or unsafe."""
 
 
+PLATFORMS = ("wechat", "xiaohongshu", "douyin", "x", "website", "zhihu")
+
 CATEGORY_TAGS = {
     "career_skills": "#未来工作",
     "developer_tools": "#AI编程",
@@ -115,8 +117,6 @@ def _assets_for_platform(
 
     if platform in {"wechat", "x"}:
         selected = summary[:1]
-    elif platform in {"xiaohongshu", "douyin"}:
-        selected = [*summary[:1], *details]
     else:
         selected = [*summary[:1], *details]
     if not selected:
@@ -240,6 +240,67 @@ def _x_thread(
     return values[:8]
 
 
+def _base_content(
+    *,
+    title: str = "",
+    summary: str = "",
+    body_markdown: str = "",
+    caption: str = "",
+    thread: Sequence[str] = (),
+    hashtags: Sequence[str] = (),
+    seo_title: str = "",
+    seo_description: str = "",
+    slug: str = "hxp-daily-intelligence",
+    source_labels: Sequence[str],
+    risk_disclaimer: str | None,
+    answer_question_placeholder: str | None = None,
+    answer_markdown: str = "",
+) -> dict[str, Any]:
+    return {
+        "title": title,
+        "summary": summary,
+        "body_markdown": body_markdown,
+        "caption": caption,
+        "thread": list(thread),
+        "hashtags": list(hashtags),
+        "seo_title": seo_title,
+        "seo_description": seo_description,
+        "slug": slug,
+        "source_labels": list(source_labels),
+        "risk_disclaimer": risk_disclaimer,
+        "answer_question_placeholder": answer_question_placeholder,
+        "answer_markdown": answer_markdown,
+    }
+
+
+def _zhihu_answer(
+    *,
+    title: str,
+    summary: str,
+    body: str,
+    risk_disclaimer: str | None,
+) -> tuple[str, str]:
+    question_placeholder = (
+        "请先在知乎选择一个与本文主题直接相关的真实问题，再粘贴回答。"
+    )
+    lines = [
+        "## 先说结论",
+        "",
+        summary or title,
+        "",
+        "## 为什么值得关注",
+        "",
+        body,
+        "",
+        "---",
+        "",
+        "本文由珩小派基于公开来源整理，并使用 AI 辅助完成结构化编辑；事实与来源已由人工复核。",
+    ]
+    if risk_disclaimer:
+        lines.extend(["", f"> {risk_disclaimer}"])
+    return question_placeholder, "\n".join(lines).strip() + "\n"
+
+
 def _content_for_platform(
     *,
     platform: str,
@@ -262,19 +323,13 @@ def _content_for_platform(
             str(briefing.get("weekly_threads", {}).get("strongest_trend", first["summary"])),
             int(profile["summary_max_units"]),
         )
-        return {
-            "title": title,
-            "summary": summary,
-            "body_markdown": body + (("\n> " + risk_disclaimer + "\n") if risk_disclaimer else ""),
-            "caption": "",
-            "thread": [],
-            "hashtags": [],
-            "seo_title": "",
-            "seo_description": "",
-            "slug": "hxp-daily-intelligence",
-            "source_labels": sources,
-            "risk_disclaimer": risk_disclaimer,
-        }
+        return _base_content(
+            title=title,
+            summary=summary,
+            body_markdown=body + (("\n> " + risk_disclaimer + "\n") if risk_disclaimer else ""),
+            source_labels=sources,
+            risk_disclaimer=risk_disclaimer,
+        )
 
     if platform == "xiaohongshu":
         title = truncate_units(f"今日{total}条AI情报｜{first['title']}", int(profile["title_max_units"]))
@@ -285,19 +340,13 @@ def _content_for_platform(
         )
         if risk_disclaimer:
             caption += "\n\n" + risk_disclaimer
-        return {
-            "title": title,
-            "summary": "",
-            "body_markdown": "",
-            "caption": truncate_units(caption, int(profile["body_max_units"])),
-            "thread": [],
-            "hashtags": _hashtags(items, int(profile["hashtags_max_items"])),
-            "seo_title": "",
-            "seo_description": "",
-            "slug": "hxp-daily-intelligence",
-            "source_labels": sources,
-            "risk_disclaimer": risk_disclaimer,
-        }
+        return _base_content(
+            title=title,
+            caption=truncate_units(caption, int(profile["body_max_units"])),
+            hashtags=_hashtags(items, int(profile["hashtags_max_items"])),
+            source_labels=sources,
+            risk_disclaimer=risk_disclaimer,
+        )
 
     if platform == "douyin":
         title = truncate_units(f"今天这{total}条AI变化值得看", int(profile["title_max_units"]))
@@ -308,57 +357,64 @@ def _content_for_platform(
         )
         if risk_disclaimer:
             caption += "\n\n" + risk_disclaimer
-        return {
-            "title": title,
-            "summary": "",
-            "body_markdown": "",
-            "caption": truncate_units(caption, int(profile["body_max_units"])),
-            "thread": [],
-            "hashtags": _hashtags(items, int(profile["hashtags_max_items"])),
-            "seo_title": "",
-            "seo_description": "",
-            "slug": "hxp-daily-intelligence",
-            "source_labels": sources,
-            "risk_disclaimer": risk_disclaimer,
-        }
+        return _base_content(
+            title=title,
+            caption=truncate_units(caption, int(profile["body_max_units"])),
+            hashtags=_hashtags(items, int(profile["hashtags_max_items"])),
+            source_labels=sources,
+            risk_disclaimer=risk_disclaimer,
+        )
 
     if platform == "x":
         caption = truncate_units(
             f"{date} 珩小派多元情报：{first['title']}。{first['summary']} 今日共{total}条，详见线程。 来源：{' / '.join(sources)}",
             int(profile["body_max_units"]),
         )
-        return {
-            "title": "",
-            "summary": "",
-            "body_markdown": "",
-            "caption": caption,
-            "thread": _x_thread(items, publishers),
-            "hashtags": _hashtags(items, int(profile["hashtags_max_items"])),
-            "seo_title": "",
-            "seo_description": "",
-            "slug": "hxp-daily-intelligence",
-            "source_labels": sources,
-            "risk_disclaimer": risk_disclaimer,
-        }
+        return _base_content(
+            caption=caption,
+            thread=_x_thread(items, publishers),
+            hashtags=_hashtags(items, int(profile["hashtags_max_items"])),
+            source_labels=sources,
+            risk_disclaimer=risk_disclaimer,
+        )
 
     title = truncate_units(f"{briefing['title']}｜{total}条今日焦点", int(profile["title_max_units"]))
     summary = truncate_units(
         str(briefing.get("weekly_threads", {}).get("strongest_trend", first["summary"])),
         int(profile["summary_max_units"]),
     )
-    return {
-        "title": title,
-        "summary": summary,
-        "body_markdown": body + (("\n> " + risk_disclaimer + "\n") if risk_disclaimer else ""),
-        "caption": "",
-        "thread": [],
-        "hashtags": [],
-        "seo_title": truncate_units(title, 100),
-        "seo_description": truncate_units(summary, 300),
-        "slug": _slug(f"hxp-intelligence-{briefing['date']}"),
-        "source_labels": sources,
-        "risk_disclaimer": risk_disclaimer,
-    }
+    body_with_risk = body + (("\n> " + risk_disclaimer + "\n") if risk_disclaimer else "")
+
+    if platform == "zhihu":
+        question_placeholder, answer_markdown = _zhihu_answer(
+            title=title,
+            summary=summary,
+            body=body,
+            risk_disclaimer=risk_disclaimer,
+        )
+        return _base_content(
+            title=title,
+            summary=summary,
+            body_markdown=body_with_risk,
+            seo_title=truncate_units(title, 100),
+            seo_description=truncate_units(summary, 300),
+            slug=_slug(f"hxp-zhihu-intelligence-{briefing['date']}"),
+            source_labels=sources,
+            risk_disclaimer=risk_disclaimer,
+            answer_question_placeholder=question_placeholder,
+            answer_markdown=answer_markdown,
+        )
+
+    return _base_content(
+        title=title,
+        summary=summary,
+        body_markdown=body_with_risk,
+        seo_title=truncate_units(title, 100),
+        seo_description=truncate_units(summary, 300),
+        slug=_slug(f"hxp-intelligence-{briefing['date']}"),
+        source_labels=sources,
+        risk_disclaimer=risk_disclaimer,
+    )
 
 
 def build_content_package_batch(
@@ -368,7 +424,7 @@ def build_content_package_batch(
     sources: Sequence[Mapping[str, Any]],
     profiles: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Build exactly five offline platform packages with stable hashes."""
+    """Build exactly six offline platform packages with stable hashes."""
     if briefing.get("date") != export_manifest.get("date"):
         raise ContentPackageError("简报与Export Manifest日期不一致")
     compact = str(briefing["date"]).replace("-", "")
@@ -381,7 +437,7 @@ def build_content_package_batch(
     investment_related = "investment_expression" in aggregate_risk_flags(items)
 
     packages: list[dict[str, Any]] = []
-    for platform in ("wechat", "xiaohongshu", "douyin", "x", "website"):
+    for platform in PLATFORMS:
         profile = platform_profiles[platform]
         assets = _assets_for_platform(
             platform=platform,
@@ -432,7 +488,7 @@ def build_content_package_batch(
             "blocked": blocked,
             "platform_counts": {
                 platform: sum(value["platform"] == platform for value in packages)
-                for platform in ("wechat", "xiaohongshu", "douyin", "x", "website")
+                for platform in PLATFORMS
             },
         },
     }

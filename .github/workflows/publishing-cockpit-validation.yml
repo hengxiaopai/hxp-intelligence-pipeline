@@ -4,16 +4,23 @@ on:
   pull_request:
     paths:
       - "config/cockpit-platforms.json"
+      - "config/platform-profiles.json"
+      - "schemas/content-package.schema.json"
       - "schemas/handoff-manifest.schema.json"
       - "schemas/cockpit-session.schema.json"
+      - "schemas/mobile-handoff.schema.json"
+      - "publishing/package_builder.py"
       - "publishing/cockpit.py"
       - "publishing/handoff.py"
+      - "publishing/mobile_handoff.py"
       - "publishing/__init__.py"
       - "scripts/build_handoff_bundle.py"
       - "scripts/build_publishing_cockpit.py"
+      - "scripts/build_mobile_handoff.py"
       - "scripts/record_manual_publication.py"
       - "scripts/generate_cockpit_fixture.py"
       - "tests/test_publishing_cockpit.py"
+      - "tests/test_mobile_handoff.py"
       - "docs/PUBLISHING-COCKPIT.md"
       - ".github/workflows/publishing-cockpit-validation.yml"
   workflow_dispatch:
@@ -46,16 +53,22 @@ jobs:
         run: >-
           python -m py_compile
           publishing/__init__.py
+          publishing/package_builder.py
           publishing/handoff.py
           publishing/cockpit.py
+          publishing/mobile_handoff.py
           scripts/build_handoff_bundle.py
           scripts/build_publishing_cockpit.py
+          scripts/build_mobile_handoff.py
           scripts/record_manual_publication.py
           scripts/generate_cockpit_fixture.py
           tests/test_publishing_cockpit.py
+          tests/test_mobile_handoff.py
 
       - name: Run no-extension cockpit tests
-        run: python -m unittest tests.test_publishing_cockpit -v
+        run: |
+          python -m unittest tests.test_publishing_cockpit -v
+          python -m unittest tests.test_mobile_handoff -v
 
       - name: Generate deterministic content package fixture
         run: |
@@ -80,6 +93,22 @@ jobs:
           test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.json' | wc -l)" -eq 6
           test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.md' | wc -l)" -eq 6
           test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.txt' | wc -l)" -eq 6
+
+      - name: Build three mobile handoff directories
+        run: |
+          mkdir -p /tmp/hxp-cockpit/mobile
+          python scripts/build_mobile_handoff.py \
+            --handoff-manifest /tmp/hxp-cockpit/handoff/manifest.json \
+            --handoff-root /tmp/hxp-cockpit/handoff \
+            --output-dir /tmp/hxp-cockpit/mobile \
+            --manifest /tmp/hxp-cockpit/mobile/manifest.json \
+            --generated-at 2026-07-30T13:20:00+08:00
+          python scripts/validate.py \
+            --schema schemas/mobile-handoff.schema.json \
+            --data /tmp/hxp-cockpit/mobile/manifest.json
+          test "$(find /tmp/hxp-cockpit/mobile -mindepth 2 -maxdepth 2 -name 'README.txt' | wc -l)" -eq 3
+          test "$(find /tmp/hxp-cockpit/mobile -mindepth 2 -maxdepth 2 -name 'content.txt' | wc -l)" -eq 3
+          grep -q "不能发布占位文本" /tmp/hxp-cockpit/mobile/zhihu/README.txt
 
       - name: Render single-file offline cockpit
         run: |
@@ -123,11 +152,17 @@ jobs:
           root = Path('/tmp/hxp-cockpit/handoff')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           session = json.loads((root / 'session.updated.json').read_text(encoding='utf-8'))
+          mobile = json.loads(Path('/tmp/hxp-cockpit/mobile/manifest.json').read_text(encoding='utf-8'))
           assert manifest['external_write_performed'] is False
           assert session['external_write_performed'] is False
-          assert manifest['summary'] == {'total': 6, 'ready': 6, 'blocked': 0, 'derived': 1}
+          assert mobile['external_write_performed'] is False
+          assert manifest['summary'] == {'total': 6, 'ready': 6, 'blocked': 0, 'derived': 0}
+          assert mobile['summary']['ready'] == 3
           assert session['summary']['draft_saved'] == 1
           assert session['summary']['published'] == 0
+          zhihu = next(entry for entry in manifest['platforms'] if entry['platform'] == 'zhihu')
+          assert zhihu['derived'] is False
+          assert 'AI 辅助' in zhihu['content']['answer_markdown']
           for entry in manifest['platforms']:
               parsed = urlsplit(entry['creator_url'])
               assert parsed.scheme == 'https'
@@ -141,6 +176,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hxp-no-extension-cockpit-2026-07-30
-          path: /tmp/hxp-cockpit/handoff
+          path: |
+            /tmp/hxp-cockpit/handoff
+            /tmp/hxp-cockpit/mobile
           if-no-files-found: error
           retention-days: 7

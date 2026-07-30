@@ -64,9 +64,9 @@
       "properties": {
         "entry_id": {
           "type": "string",
-          "pattern": "^publication-entry-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website)$"
+          "pattern": "^publication-entry-[0-9]{8}-(wechat|xiaohongshu|douyin|x|website|zhihu)$"
         },
-        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website"]},
+        "platform": {"type": "string", "enum": ["wechat", "xiaohongshu", "douyin", "x", "website", "zhihu"]},
         "decision": {"type": "string", "enum": ["approved", "rejected", "blocked"]},
         "account_ref_confirmed": {"type": "boolean"},
         "content_hash_confirmed": {"type": "boolean"},
