@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "write_actions_enabled": false,
   "default_action": "draft_only",
   "platforms": [
@@ -68,6 +68,19 @@
       "required_fields": ["title", "summary", "body_markdown", "seo_title", "seo_description", "slug", "source_labels"],
       "risk_rules": ["source_list_required", "investment_disclaimer"],
       "allowed_actions": ["draft_only"]
+    },
+    {
+      "platform": "zhihu",
+      "display_name": "知乎",
+      "required_preset": "landscape_16x9",
+      "title_max_units": 100,
+      "summary_max_units": 300,
+      "body_max_units": 30000,
+      "hashtags_max_items": 0,
+      "thread_max_items": 0,
+      "required_fields": ["title", "summary", "body_markdown", "answer_question_placeholder", "answer_markdown", "source_labels"],
+      "risk_rules": ["source_list_required", "investment_disclaimer", "question_selection_required", "ai_assistance_disclosure"],
+      "allowed_actions": ["draft_only", "manual_publish"]
     }
   ],
   "global_rules": {
