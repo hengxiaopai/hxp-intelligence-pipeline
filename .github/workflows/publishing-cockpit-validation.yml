@@ -1,0 +1,146 @@
+name: Publishing Cockpit Validation
+
+on:
+  pull_request:
+    paths:
+      - "config/cockpit-platforms.json"
+      - "schemas/handoff-manifest.schema.json"
+      - "schemas/cockpit-session.schema.json"
+      - "publishing/cockpit.py"
+      - "publishing/handoff.py"
+      - "publishing/__init__.py"
+      - "scripts/build_handoff_bundle.py"
+      - "scripts/build_publishing_cockpit.py"
+      - "scripts/record_manual_publication.py"
+      - "scripts/generate_cockpit_fixture.py"
+      - "tests/test_publishing_cockpit.py"
+      - "docs/PUBLISHING-COCKPIT.md"
+      - ".github/workflows/publishing-cockpit-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-extension-cockpit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile cockpit code
+        run: >-
+          python -m py_compile
+          publishing/__init__.py
+          publishing/handoff.py
+          publishing/cockpit.py
+          scripts/build_handoff_bundle.py
+          scripts/build_publishing_cockpit.py
+          scripts/record_manual_publication.py
+          scripts/generate_cockpit_fixture.py
+          tests/test_publishing_cockpit.py
+
+      - name: Run no-extension cockpit tests
+        run: python -m unittest tests.test_publishing_cockpit -v
+
+      - name: Generate deterministic content package fixture
+        run: |
+          rm -rf /tmp/hxp-cockpit
+          python scripts/generate_cockpit_fixture.py \
+            --output-root /tmp/hxp-cockpit
+          python scripts/validate.py \
+            --schema schemas/content-package.schema.json \
+            --data /tmp/hxp-cockpit/content-packages.json
+
+      - name: Build six platform handoff directories
+        run: |
+          mkdir -p /tmp/hxp-cockpit/handoff
+          python scripts/build_handoff_bundle.py \
+            --packages /tmp/hxp-cockpit/content-packages.json \
+            --output-dir /tmp/hxp-cockpit/handoff \
+            --manifest /tmp/hxp-cockpit/handoff/manifest.json \
+            --generated-at 2026-07-30T13:00:00+08:00
+          python scripts/validate.py \
+            --schema schemas/handoff-manifest.schema.json \
+            --data /tmp/hxp-cockpit/handoff/manifest.json
+          test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.json' | wc -l)" -eq 6
+          test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.md' | wc -l)" -eq 6
+          test "$(find /tmp/hxp-cockpit/handoff -mindepth 2 -maxdepth 2 -name 'content.txt' | wc -l)" -eq 6
+
+      - name: Render single-file offline cockpit
+        run: |
+          python scripts/build_publishing_cockpit.py \
+            --manifest /tmp/hxp-cockpit/handoff/manifest.json \
+            --output /tmp/hxp-cockpit/handoff/cockpit.html
+          grep -q "多平台发布驾驶舱" /tmp/hxp-cockpit/handoff/cockpit.html
+          grep -q "无需浏览器扩展" /tmp/hxp-cockpit/handoff/cockpit.html
+          grep -q "知乎回答版" /tmp/hxp-cockpit/handoff/cockpit.html
+          ! grep -qi '<script src=' /tmp/hxp-cockpit/handoff/cockpit.html
+          ! grep -qi 'document.cookie' /tmp/hxp-cockpit/handoff/cockpit.html
+          ! grep -qi 'playwright' /tmp/hxp-cockpit/handoff/cockpit.html
+
+      - name: Exercise user-confirmed manual session
+        run: |
+          python scripts/record_manual_publication.py \
+            --manifest /tmp/hxp-cockpit/handoff/manifest.json \
+            --updated-at 2026-07-30T13:10:00+08:00 \
+            --session-slug ci \
+            --output /tmp/hxp-cockpit/handoff/session.json
+          python scripts/record_manual_publication.py \
+            --manifest /tmp/hxp-cockpit/handoff/manifest.json \
+            --session /tmp/hxp-cockpit/handoff/session.json \
+            --platform zhihu \
+            --status draft_saved \
+            --confirmed-by-user \
+            --notes "CI fixture only; no platform write" \
+            --updated-at 2026-07-30T13:12:00+08:00 \
+            --output /tmp/hxp-cockpit/handoff/session.updated.json
+          python scripts/validate.py \
+            --schema schemas/cockpit-session.schema.json \
+            --data /tmp/hxp-cockpit/handoff/session.updated.json
+
+      - name: Verify hard safety invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlsplit
+
+          root = Path('/tmp/hxp-cockpit/handoff')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          session = json.loads((root / 'session.updated.json').read_text(encoding='utf-8'))
+          assert manifest['external_write_performed'] is False
+          assert session['external_write_performed'] is False
+          assert manifest['summary'] == {'total': 6, 'ready': 6, 'blocked': 0, 'derived': 1}
+          assert session['summary']['draft_saved'] == 1
+          assert session['summary']['published'] == 0
+          for entry in manifest['platforms']:
+              parsed = urlsplit(entry['creator_url'])
+              assert parsed.scheme == 'https'
+              assert not parsed.query and not parsed.fragment
+              assert not parsed.username and not parsed.password
+              assert f'https://{parsed.netloc.lower()}' in entry['allowed_origins']
+              assert all((root / asset['bundle_path']).is_file() for asset in entry['assets'])
+          PY
+
+      - name: Upload cockpit audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-no-extension-cockpit-2026-07-30
+          path: /tmp/hxp-cockpit/handoff
+          if-no-files-found: error
+          retention-days: 7
