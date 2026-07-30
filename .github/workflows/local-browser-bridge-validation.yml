@@ -1,0 +1,129 @@
+name: Local Browser Bridge Validation
+
+on:
+  pull_request:
+    paths:
+      - "config/local-browser-bridges.json"
+      - "schemas/browser-bridge-*.schema.json"
+      - "publishing/bridges/**"
+      - "scripts/inspect_local_bridges.py"
+      - "scripts/build_wechatsync_bridge_request.py"
+      - "scripts/normalize_wechatsync_fixture.py"
+      - "tests/fixtures/bridge/**"
+      - "tests/test_wechatsync_bridge.py"
+      - "docs/WECHATSYNC-BRIDGE.md"
+      - ".github/workflows/local-browser-bridge-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-bridge-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validation dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+
+      - name: Compile bridge code
+        run: >-
+          python -m py_compile
+          publishing/bridges/__init__.py
+          publishing/bridges/base.py
+          publishing/bridges/registry.py
+          publishing/bridges/wechatsync.py
+          scripts/inspect_local_bridges.py
+          scripts/build_wechatsync_bridge_request.py
+          scripts/normalize_wechatsync_fixture.py
+          tests/test_wechatsync_bridge.py
+
+      - name: Validate bridge capability registry
+        run: |
+          python scripts/validate.py \
+            --schema schemas/browser-bridge-capability.schema.json \
+            --data config/local-browser-bridges.json
+          python scripts/inspect_local_bridges.py
+
+      - name: Run offline bridge tests
+        run: python -m unittest tests.test_wechatsync_bridge -v
+
+      - name: Build deterministic non-executable request
+        run: |
+          mkdir -p /tmp/hxp-bridge
+          python scripts/build_wechatsync_bridge_request.py \
+            --operation create_draft \
+            --platforms zhihu,juejin,csdn \
+            --created-at 2026-07-30T09:00:00+08:00 \
+            --article tests/fixtures/bridge/article.json \
+            --account-ref hxp-browser-fixture \
+            --transport fixture \
+            --output /tmp/hxp-bridge/request.json
+          python scripts/build_wechatsync_bridge_request.py \
+            --operation create_draft \
+            --platforms csdn,zhihu,juejin,zhihu \
+            --created-at 2026-07-30T09:05:00+08:00 \
+            --article tests/fixtures/bridge/article.json \
+            --account-ref hxp-browser-fixture \
+            --transport fixture \
+            --output /tmp/hxp-bridge/request.repeat.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          first = json.loads(Path('/tmp/hxp-bridge/request.json').read_text(encoding='utf-8'))
+          repeat = json.loads(Path('/tmp/hxp-bridge/request.repeat.json').read_text(encoding='utf-8'))
+          assert first['request_fingerprint'] == repeat['request_fingerprint']
+          assert first['bridge_request_id'] == repeat['bridge_request_id']
+          assert first['execution_allowed'] is False
+          assert first['external_write_expected'] is False
+          PY
+          python scripts/validate.py \
+            --schema schemas/browser-bridge-request.schema.json \
+            --data /tmp/hxp-bridge/request.json
+
+      - name: Normalize auth and draft fixtures
+        run: |
+          python scripts/normalize_wechatsync_fixture.py \
+            --kind health \
+            --raw tests/fixtures/bridge/wechatsync-platforms.json \
+            --at 2026-07-30T09:01:00+08:00 \
+            --extension-connected true \
+            --credential-present true \
+            --output /tmp/hxp-bridge/health.json
+          python scripts/normalize_wechatsync_fixture.py \
+            --kind result \
+            --request /tmp/hxp-bridge/request.json \
+            --raw tests/fixtures/bridge/wechatsync-sync-result.json \
+            --at 2026-07-30T09:02:00+08:00 \
+            --output /tmp/hxp-bridge/result.json
+          python scripts/validate.py \
+            --schema schemas/browser-bridge-health.schema.json \
+            --data /tmp/hxp-bridge/health.json
+          python scripts/validate.py \
+            --schema schemas/browser-bridge-result.schema.json \
+            --data /tmp/hxp-bridge/result.json
+          grep -q '"external_write_performed": false' /tmp/hxp-bridge/result.json
+          grep -q '"cli_exit_code_used_as_authority": false' /tmp/hxp-bridge/result.json
+          ! grep -qiE 'token=|session_id=|authorization:|bearer ' /tmp/hxp-bridge/result.json
+
+      - name: Copy capability snapshot
+        run: python scripts/inspect_local_bridges.py --json > /tmp/hxp-bridge/registry.json
+
+      - name: Upload offline bridge audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxp-wechatsync-bridge-audit-2026-07-30
+          path: /tmp/hxp-bridge
+          if-no-files-found: error
+          retention-days: 7
