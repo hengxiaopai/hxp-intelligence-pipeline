@@ -17,12 +17,12 @@ def build_publication_plan(
     created_at: str,
 ) -> dict[str, Any]:
     if package_batch.get("write_actions_enabled") is not False:
-        raise PublicationPlanError("Phase 5.1 内容包必须保持 write_actions_enabled=false")
+        raise PublicationPlanError("内容包必须保持 write_actions_enabled=false")
     compact = str(package_batch["date"]).replace("-", "")
     packages = {value["platform"]: value for value in package_batch.get("packages", [])}
-    expected = ("wechat", "xiaohongshu", "douyin", "x", "website")
+    expected = ("wechat", "xiaohongshu", "douyin", "x", "website", "zhihu")
     if set(packages) != set(expected):
-        raise PublicationPlanError("发布计划需要五个平台内容包")
+        raise PublicationPlanError("发布计划需要六个平台内容包")
 
     entries: list[dict[str, Any]] = []
     for platform in expected:
