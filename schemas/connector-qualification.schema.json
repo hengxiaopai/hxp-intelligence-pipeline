@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hengxiaopai.com/schemas/connector-qualification.schema.json",
+  "title": "HXP Official Connector Qualification Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "report_id", "generated_at", "execution_enabled", "external_write_performed", "qualifications", "summary"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "report_id": {"type": "string", "pattern": "^connector-qualification-[0-9]{8}-[a-z0-9-]{3,40}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "execution_enabled": {"type": "boolean", "const": false},
+    "external_write_performed": {"type": "boolean", "const": false},
+    "qualifications": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/qualification"}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "unknown", "eligible", "blocked", "simulated"],
+      "properties": {
+        "total": {"type": "integer", "const": 4},
+        "unknown": {"type": "integer", "minimum": 0, "maximum": 4},
+        "eligible": {"type": "integer", "minimum": 0, "maximum": 4},
+        "blocked": {"type": "integer", "minimum": 0, "maximum": 4},
+        "simulated": {"type": "integer", "minimum": 0, "maximum": 4}
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check_id", "kind", "status", "evidence_ref", "reason"],
+      "properties": {
+        "check_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,100}$"},
+        "kind": {"type": "string", "enum": ["fact", "capability", "asset", "credential_reference", "origin", "policy"]},
+        "status": {"type": "string", "enum": ["present", "missing", "confirmed_false", "simulated"]},
+        "evidence_ref": {"type": ["string", "null"], "maxLength": 300},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+      }
+    },
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connector_id", "platform", "integration_type", "status", "enabled", "action", "account_ref", "application_ref", "official_origins", "credential_environment_variables", "checks", "missing_requirements", "blocking_reasons", "execution_allowed"
+      ],
+      "properties": {
+        "connector_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"},
+        "platform": {"type": "string", "enum": ["website", "wechat", "douyin", "xiaohongshu"]},
+        "integration_type": {"type": "string", "enum": ["server_api", "oauth_api", "client_share_sdk"]},
+        "status": {"type": "string", "enum": ["unknown", "eligible", "blocked", "simulated"]},
+        "enabled": {"type": "boolean", "const": false},
+        "action": {"type": "string", "enum": ["draft_only", "connector_publish", "manual_publish"]},
+        "account_ref": {"type": ["string", "null"], "maxLength": 160},
+        "application_ref": {"type": ["string", "null"], "maxLength": 160},
+        "official_origins": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^https://[^/?#]+$"}},
+        "credential_environment_variables": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,100}$"}},
+        "checks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/check"}},
+        "missing_requirements": {"type": "array", "uniqueItems": true, "items": {"type": "string", "maxLength": 160}},
+        "blocking_reasons": {"type": "array", "items": {"type": "string", "maxLength": 500}},
+        "execution_allowed": {"type": "boolean", "const": false}
+      }
+    }
+  }
+}
